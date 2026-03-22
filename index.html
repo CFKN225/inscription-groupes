@@ -251,7 +251,7 @@ function PoolCard({ idx, nbEtudiants, fb, groupeCounter }) {
   const pausedRef     = useRef(false);
   const activeEditRef = useRef(0);
   const writingRef    = useRef(false);
-  const waitingRef    = useRef(null); // timer 10s inactivité
+  const waitingRef    = useRef(null); // boucle 5s inactivité
 
   useEffect(()=>{ runningRef.current=running; },[running]);
   useEffect(()=>{ pausedRef.current=paused;   },[paused]);
@@ -330,17 +330,41 @@ function PoolCard({ idx, nbEtudiants, fb, groupeCounter }) {
 
   const onBlurField = useCallback(()=>{
     setActiveEditors(n=>{ const nx=Math.max(0,n-1); activeEditRef.current=nx; if(nx===0) resumeTimer(); return nx; });
-    // Lancer le timer d'inactivité 10s → afficher badge attente
+    // Relancer la boucle 5s après blur
     clearTimeout(waitingRef.current);
-    waitingRef.current = setTimeout(()=>setShowWaiting(true), 10000);
+    waitingRef.current = setTimeout(()=>setShowWaiting(true), 5000);
   },[resumeTimer]);
 
   const onFocusFieldWrap = useCallback((e)=>{
     onFocusField(e);
-    // Annuler le badge d'attente dès qu'on tape
+    // Masquer le badge et arrêter la boucle pendant la saisie
     clearTimeout(waitingRef.current);
     setShowWaiting(false);
   },[onFocusField]);
+
+  // Démarrer la boucle 5s dès le chargement de la carte
+  useEffect(()=>{
+    if (!fbReady) return;
+    clearTimeout(waitingRef.current);
+    waitingRef.current = setTimeout(()=>{
+      const unconfirmed = slots.filter(s=>!s.confirmed).length;
+      if (unconfirmed>0) setShowWaiting(true);
+    }, 5000);
+    return ()=>clearTimeout(waitingRef.current);
+  },[fbReady]);
+  useEffect(()=>{
+    if (!showWaiting) return;
+    const hide = setTimeout(()=>{
+      setShowWaiting(false);
+      // relancer dans 5s si toujours pas confirmé
+      waitingRef.current = setTimeout(()=>{
+        const unconfirmed = slots.filter(s=>s.name.trim()&&!s.confirmed).length
+                         + slots.filter(s=>!s.name.trim()).length;
+        if (unconfirmed>0) setShowWaiting(true);
+      }, 5000);
+    }, 2500);
+    return ()=>clearTimeout(hide);
+  },[showWaiting]);
 
   const toggleConfirm = i => {
     setSlots(prev=>{
