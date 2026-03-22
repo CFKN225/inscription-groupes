@@ -186,6 +186,10 @@ function buildText(pub, nbE) {
 function waitFB(){ return new Promise(function(r){ (function c(){ window._fb?r(window._fb):setTimeout(c,50); })(); }); }
 
 function vibrateCard(num){
+  // Stopper toutes les vibrations en cours avant d'en lancer une nouvelle
+  document.querySelectorAll('.card-bubble.vibrate').forEach(function(b){
+    b.classList.remove('vibrate');
+  });
   var el = document.getElementById('pub-'+num);
   if (!el) return;
   var bubble = el.querySelector('.card-bubble');
