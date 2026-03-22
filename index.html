@@ -103,6 +103,14 @@ input.locked{background:#0d0f18!important;color:#2c2e42!important;border-color:#
 .share-wa:hover{background:#1ebe5a;transform:translateY(-1px);box-shadow:0 4px 16px rgba(37,211,102,.35);}
 .share-wa.sending{background:#128c3e;cursor:wait;opacity:.85;transform:none;}
 .share-wa:disabled{cursor:wait;}
+/* SEARCH */
+.search-bar{max-width:1400px;margin:0 auto 24px;display:flex;align-items:center;gap:10px;}
+.search-wrap{position:relative;flex:1;max-width:320px;}
+.search-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Space Mono',monospace;font-size:.8rem;padding:9px 14px 9px 38px;outline:none;transition:border-color .2s;}
+.search-input:focus{border-color:var(--accent);}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.85rem;pointer-events:none;}
+.search-not-found{font-family:'Space Mono',monospace;font-size:.62rem;color:var(--red);letter-spacing:1px;}
+.pub-card.highlighted{outline:3px solid var(--accent);outline-offset:3px;transition:outline .2s;}
 /* SETTINGS */
 .settings-panel{max-width:1400px;margin:0 auto 28px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
 .settings-panel label{font-family:'Space Mono',monospace;font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;}
@@ -557,6 +565,8 @@ function App() {
   const [nbEtudiants,  setNbEtudiants]  = useState(4);
   const [nbCartes,     setNbCartes]     = useState(10);
   const [loading,      setLoading]      = useState(true);
+  const [searchVal,    setSearchVal]    = useState('');
+  const [searchNotFound, setSearchNotFound] = useState(false);
 
   // Init Firebase
   useEffect(()=>{
@@ -582,6 +592,27 @@ function App() {
   },[fb]);
 
   const nbAbj = Math.ceil(nbEtudiants/2);
+
+  const handleSearch = (val) => {
+    setSearchVal(val);
+    setSearchNotFound(false);
+    const num = parseInt(val);
+    if (!val.trim() || isNaN(num)) return;
+    const found = published.find(p => p.num === num);
+    if (found) {
+      setTimeout(()=>{
+        const el = document.getElementById(`pub-${num}`);
+        if (el) {
+          el.scrollIntoView({ behavior:'smooth', block:'center' });
+          el.classList.add('highlighted');
+          setTimeout(()=>el.classList.remove('highlighted'), 2500);
+        }
+      }, 100);
+    } else {
+      setSearchNotFound(true);
+      setTimeout(()=>setSearchNotFound(false), 2500);
+    }
+  };
 
   if (loading) return (
     <div className="loading-screen">
@@ -629,6 +660,23 @@ function App() {
       </div>
 
       {published.length>0&&(
+        <>
+        {/* Barre de recherche */}
+        <div className="search-bar">
+          <div className="search-wrap">
+            <span className="search-icon">🔍</span>
+            <input
+              className="search-input"
+              type="number"
+              placeholder="N° groupe…"
+              value={searchVal}
+              onChange={e=>handleSearch(e.target.value)}
+              min="1"
+            />
+          </div>
+          {searchNotFound && <span className="search-not-found">❌ Groupe #{searchVal} introuvable</span>}
+        </div>
+
         <div className="published-section">
           <div className="pub-heading">
             ✅ Groupes Publiés
@@ -660,6 +708,7 @@ function App() {
             })}
           </div>
         </div>
+        </>
       )}
     </div>
   );
