@@ -661,7 +661,6 @@ function App() {
 
       {published.length>0&&(
         <>
-        {/* Barre de recherche */}
         <div className="search-bar">
           <div className="search-wrap">
             <span className="search-icon">🔍</span>
@@ -674,7 +673,7 @@ function App() {
               min="1"
             />
           </div>
-          {searchNotFound && <span className="search-not-found">❌ Groupe #{searchVal} introuvable</span>}
+          {searchNotFound && <span className="search-not-found">{'❌ Groupe #'+searchVal+' introuvable'}</span>}
         </div>
 
         <div className="published-section">
@@ -688,7 +687,7 @@ function App() {
               return (
                 <div className="pub-card" id={`pub-${pub.num}`} key={pub.num}>
                   <div className="gloss"/>
-                  <h4>Groupe #{pub.num} · {pub.time}</h4>
+                  <h4>{'Groupe #'+pub.num+' · '+pub.time}</h4>
                   {pub.slots.map((s,i)=>{
                     const res=pub.phase===2?'ABJ':(i<nAbj?'ABJ':'HORS ABJ');
                     return (
