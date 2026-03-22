@@ -62,6 +62,7 @@ header p{color:var(--muted);font-family:'Space Mono',monospace;font-size:.65rem;
 .field-label{font-family:'Space Mono',monospace;font-size:.5rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;padding-left:2px;}
 input[type=text],input[type=tel]{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Syne',sans-serif;font-size:.75rem;padding:7px 9px;width:100%;outline:none;transition:border-color .2s,background .2s;}
 input[type=text]:focus,input[type=tel]:focus{border-color:var(--accent);background:rgba(245,200,66,.03);}
+input[type=text]{text-transform:uppercase;}
 input.locked{background:#0d0f18!important;color:#2c2e42!important;border-color:#181a27!important;cursor:not-allowed;pointer-events:none;}
 .confirm-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--border);cursor:pointer;user-select:none;transition:border-color .2s;}
 .confirm-row:hover{border-color:rgba(6,214,160,.3);}
@@ -500,7 +501,7 @@ function PoolCard({ idx, nbEtudiants, fb, groupeCounter }) {
                   <input type="text" placeholder="Prénom Nom" value={slot.name}
                     className={locked?'locked':''} disabled={locked}
                     onFocus={onFocusFieldWrap} onBlur={onBlurField}
-                    onChange={e=>updateField(i,'name',e.target.value)}/>
+                    onChange={e=>updateField(i,'name',e.target.value.toUpperCase())}/>
                 </div>
                 <div className="field-group">
                   <span className="field-label">WhatsApp</span>
