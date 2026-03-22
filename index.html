@@ -86,7 +86,8 @@ input[type=text]{text-transform:uppercase;}
 .ssep{width:1px;height:36px;background:var(--border);}
 .sh{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);line-height:1.5;}
 .search-bar{max-width:1400px;margin:0 auto 20px;display:flex;align-items:center;gap:12px;}
-.search-wrap{position:relative;max-width:280px;}
+.search-center{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:24px;}
+.search-wrap{position:relative;max-width:280px;width:100%;}
 .search-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Space Mono',monospace;font-size:.8rem;padding:9px 14px 9px 36px;outline:none;transition:border-color .2s;}
 .search-input:focus{border-color:var(--accent);}
 .search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
@@ -94,15 +95,17 @@ input[type=text]{text-transform:uppercase;}
 .published-section{max-width:1400px;margin:0 auto;}
 .pub-heading{font-size:1.3rem;font-weight:800;color:var(--green);margin-bottom:18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .pub-heading small{font-size:.7rem;color:var(--muted);font-weight:400;font-family:'Space Mono',monospace;}
-.pub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;}
-.pub-card{background:rgba(6,214,160,.04);border:1px solid rgba(6,214,160,.2);border-radius:12px;padding:14px;animation:pop .35s ease;position:relative;overflow:hidden;transition:outline .2s;}
+.pub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;padding-top:18px;}
+.pub-card{background:rgba(6,214,160,.04);border:1px solid rgba(6,214,160,.2);border-radius:12px;padding:22px 14px 14px;animation:pop .35s ease;position:relative;overflow:visible;transition:outline .2s;}
 .pub-card::before{content:'';position:absolute;inset:-2px;border-radius:14px;background:conic-gradient(from var(--a,0deg),transparent 0deg,transparent 60deg,#00ff88 90deg,#afffdf 110deg,#fff 120deg,#afffdf 130deg,#00ff88 150deg,transparent 180deg,transparent 360deg);animation:sb 2.5s linear infinite;z-index:0;}
 .pub-card::after{content:'';position:absolute;inset:2px;border-radius:12px;background:#0d1a14;z-index:1;}
 .pub-card>*{position:relative;z-index:2;}
 @property --a{syntax:'<angle>';initial-value:0deg;inherits:false;}
 @keyframes sb{from{--a:0deg;}to{--a:360deg;}}
 .gloss{position:absolute;inset:2px;border-radius:12px;background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,0) 50%,rgba(0,255,136,.04) 100%);pointer-events:none;z-index:3;}
+.card-bubble{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--accent);color:#000;font-family:'Space Mono',monospace;font-weight:700;font-size:.72rem;padding:5px 14px;border-radius:50px;box-shadow:0 4px 20px rgba(245,200,66,.7);white-space:nowrap;z-index:10;transition:opacity .5s, transform .5s;animation:bubble-pop .4s cubic-bezier(.17,.67,.35,1.4);}
 .pub-card.hl{outline:3px solid var(--accent);outline-offset:2px;}
+@keyframes bubble-pop{from{transform:translateX(-50%) scale(.3);opacity:0;}to{transform:translateX(-50%) scale(1);opacity:1;}}
 @keyframes pop{from{opacity:0;transform:translateY(10px) scale(.97);}to{opacity:1;transform:none;}}
 .pc-head{font-family:'Space Mono',monospace;font-size:.62rem;color:var(--green);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
 .pe{display:flex;align-items:flex-start;gap:7px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);}
@@ -306,7 +309,7 @@ function PoolCard(props) {
       }
       saveDB(next, phase);
       var allDone = next.every(function(s){ return s.name.trim()&&s.wa.trim()&&s.confirmed; });
-      if (allDone){ setShowBravo(true); setTimeout(function(){ setShowBravo(false); }, 3500); }
+      if (allDone){ setShowBravo(true); setTimeout(function(){ setShowBravo(false); }, 1000); }
       return next;
     });
   }
@@ -332,44 +335,21 @@ function PoolCard(props) {
         publishedAt: Date.now()
       });
       fb.set(fb.ref(fb.db,'cards/'+cardKey), {slots:emptySlots(nbE), phase:1, updatedAt:Date.now()});
+      // Scroll vers la carte publiée — la bulle intégrée disparaît quand la carte est visible
       setTimeout(function(){
         var el = document.getElementById('pub-'+num);
         if (!el) return;
-
-        // Créer la bulle flottante
-        var bubble = document.createElement('div');
-        bubble.className = 'num-bubble';
-        bubble.textContent = 'Groupe #'+num;
-        document.body.appendChild(bubble);
-
-        // Positionner au centre de l'écran horizontalement, en bas
-        bubble.style.left = (window.innerWidth/2 - bubble.offsetWidth/2) + 'px';
-        bubble.style.top  = (window.innerHeight/2) + 'px';
-
-        // Suivre le scroll jusqu'à la carte
         el.scrollIntoView({behavior:'smooth', block:'center'});
-
-        // Animer la bulle vers la position de la carte pendant le scroll
-        var duration = 900;
-        var start = Date.now();
-        var startY = window.scrollY;
-
-        var anim = setInterval(function(){
-          var progress = Math.min(1, (Date.now()-start)/duration);
-          var targetRect = el.getBoundingClientRect();
-          var bx = window.innerWidth/2 - bubble.offsetWidth/2;
-          var by = targetRect.top + targetRect.height/2 - bubble.offsetHeight/2;
-          bubble.style.left = bx + 'px';
-          bubble.style.top  = (window.scrollY + by) + 'px';
-          if (progress >= 1) clearInterval(anim);
-        }, 16);
-
-        // Faire pulser puis disparaître après 2.5s
+        // Attendre que le scroll soit fini puis masquer la bulle
         setTimeout(function(){
-          bubble.style.opacity = '0';
-          setTimeout(function(){ document.body.removeChild(bubble); }, 400);
-        }, 2500);
-      }, 400);
+          var bubble = el.querySelector('.card-bubble');
+          if (bubble){
+            bubble.style.opacity = '0';
+            bubble.style.transform = 'scale(0.5)';
+            setTimeout(function(){ bubble.style.display='none'; }, 500);
+          }
+        }, 1000);
+      }, 500);
     }, {onlyOnce:true});
     setSlots(emptySlots(nbE)); setPhase(1); setTimeLeft(TIMER_TOTAL);
     setRunning(false); setPaused(false); setExpired(false);
@@ -568,8 +548,10 @@ function App() {
       React.createElement('div', {className:'published-section'},
         React.createElement('div', {className:'pub-heading'},
           '\u2705 Groupes Publi\xe9s',
-          React.createElement('small', null, published.length+' groupe'+(published.length>1?'s':'')),
-          React.createElement('div', {className:'search-wrap', style:{marginLeft:'auto'}},
+          React.createElement('small', null, published.length+' groupe'+(published.length>1?'s':''))
+        ),
+        React.createElement('div', {className:'search-center'},
+          React.createElement('div', {className:'search-wrap'},
             React.createElement('span', {className:'search-icon'}, '\ud83d\udd0d'),
             React.createElement('input', {
               className:'search-input', type:'number',
@@ -584,6 +566,7 @@ function App() {
             var nA = Math.ceil(nbE/2);
             return React.createElement('div', {className:'pub-card', id:'pub-'+pub.num, key:pub.num},
               React.createElement('div', {className:'gloss'}),
+              React.createElement('div', {className:'card-bubble'}, 'Groupe #'+pub.num),
               React.createElement('div', {className:'pc-head'}, 'Groupe #'+pub.num+' \u00b7 '+pub.time),
               pub.slots.map(function(s,i){
                 var res = pub.phase===2?'ABJ':(i<nA?'ABJ':'HORS ABJ');
