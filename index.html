@@ -392,7 +392,7 @@ function PoolCard({ idx, nbEtudiants, fb, groupeCounter }) {
 
   const tState       = expired?'e':paused?'p':phase===2?'t':'';
   const pct          = (timeLeft/TIMER_TOTAL)*100;
-  const slot23Locked = phase===1&&!running&&!expired;
+  const slot23Locked = false;
   const canPublish   = slots.every(s=>s.name.trim()&&s.wa.trim()&&s.confirmed);
   const simultane    = activeEditors>=2;
   const filledCount  = slots.filter(s=>s.name.trim()).length;
