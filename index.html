@@ -124,11 +124,18 @@ input.locked{background:#0d0f18!important;color:#2c2e42!important;border-color:#
 .loading-screen{display:flex;align-items:center;justify-content:center;min-height:60vh;flex-direction:column;gap:16px;}
 .loading-screen p{font-family:'Space Mono',monospace;color:var(--muted);font-size:.75rem;letter-spacing:2px;}
 .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-/* WAITING STATUS */
-.waiting-badge{width:100%;margin-bottom:10px;padding:8px 12px;border-radius:10px;background:rgba(239,35,60,.08);border:1px solid rgba(239,35,60,.25);display:flex;align-items:center;justify-content:space-between;gap:8px;}
-.waiting-text{font-family:'Space Mono',monospace;font-size:.58rem;color:#ef233c;letter-spacing:.5px;line-height:1.4;}
-.waiting-btn{flex-shrink:0;padding:5px 10px;border:none;border-radius:7px;background:#ef233c;color:#fff;font-family:'Syne',sans-serif;font-weight:800;font-size:.6rem;cursor:pointer;letter-spacing:1px;animation:pulse-red .8s ease-in-out infinite alternate;}
+/* WAITING STATUS - espace réservé fixe, ne redimensionne pas la carte */
+/* OPEN TO ALL - simple text */
+.phase-notice{display:none;}
+.delai-badge{display:none;}
+.open-all{font-family:'Space Mono',monospace;font-size:.55rem;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s;pointer-events:none;}
+.open-all.visible{opacity:1;}
+/* WAITING FRAME — espace fixe partagé open-all + badge */
+.waiting-frame{height:32px;margin-bottom:8px;position:relative;}
+.waiting-badge{position:absolute;inset:0;padding:4px 10px;border-radius:8px;background:rgba(239,35,60,.08);border:1px solid rgba(239,35,60,.25);display:flex;align-items:center;justify-content:space-between;gap:8px;opacity:0;pointer-events:none;transition:opacity .3s;}
+.waiting-badge.visible{opacity:1;pointer-events:all;}
+.waiting-text{font-family:'Space Mono',monospace;font-size:.52rem;color:#ef233c;letter-spacing:.5px;line-height:1.3;}
+.waiting-btn{flex-shrink:0;padding:3px 8px;border:none;border-radius:6px;background:#ef233c;color:#fff;font-family:'Syne',sans-serif;font-weight:800;font-size:.55rem;cursor:pointer;letter-spacing:1px;animation:pulse-red .8s ease-in-out infinite alternate;}
 @keyframes pulse-red{from{box-shadow:0 0 6px rgba(239,35,60,.5);}to{box-shadow:0 0 18px rgba(239,35,60,.95),0 0 30px rgba(239,35,60,.4);}}
 </style>
 </head>
@@ -330,41 +337,34 @@ function PoolCard({ idx, nbEtudiants, fb, groupeCounter }) {
 
   const onBlurField = useCallback(()=>{
     setActiveEditors(n=>{ const nx=Math.max(0,n-1); activeEditRef.current=nx; if(nx===0) resumeTimer(); return nx; });
-    // Relancer la boucle 5s après blur
+    // Relancer le cycle 5s après la fin de saisie
     clearTimeout(waitingRef.current);
-    waitingRef.current = setTimeout(()=>setShowWaiting(true), 5000);
+    waitingRef.current = setTimeout(()=>{
+      if (activeEditRef.current > 0) return;
+      setShowWaiting(true);
+    }, 5000);
   },[resumeTimer]);
 
   const onFocusFieldWrap = useCallback((e)=>{
     onFocusField(e);
-    // Masquer le badge et arrêter la boucle pendant la saisie
+    // Masquer badge et stopper cycle pendant saisie active
     clearTimeout(waitingRef.current);
     setShowWaiting(false);
   },[onFocusField]);
 
-  // Démarrer la boucle 5s dès le chargement de la carte
+  // Cycle 5s universel — fonctionne que le timer soit en cours ou non
+  // Déclenche si membres manquants et aucune saisie active
   useEffect(()=>{
     if (!fbReady) return;
-    clearTimeout(waitingRef.current);
-    waitingRef.current = setTimeout(()=>{
+    const loop = setInterval(()=>{
+      if (activeEditRef.current > 0) return; // saisie en cours → skip
       const unconfirmed = slots.filter(s=>!s.confirmed).length;
-      if (unconfirmed>0) setShowWaiting(true);
+      if (unconfirmed === 0) return; // tous confirmés → skip
+      setShowWaiting(true);
+      setTimeout(()=>setShowWaiting(false), 2500); // masquer après 2.5s
     }, 5000);
-    return ()=>clearTimeout(waitingRef.current);
-  },[fbReady]);
-  useEffect(()=>{
-    if (!showWaiting) return;
-    const hide = setTimeout(()=>{
-      setShowWaiting(false);
-      // relancer dans 5s si toujours pas confirmé
-      waitingRef.current = setTimeout(()=>{
-        const unconfirmed = slots.filter(s=>s.name.trim()&&!s.confirmed).length
-                         + slots.filter(s=>!s.name.trim()).length;
-        if (unconfirmed>0) setShowWaiting(true);
-      }, 5000);
-    }, 2500);
-    return ()=>clearTimeout(hide);
-  },[showWaiting]);
+    return ()=>clearInterval(loop);
+  },[fbReady, slots]);
 
   const toggleConfirm = i => {
     setSlots(prev=>{
@@ -467,28 +467,20 @@ function PoolCard({ idx, nbEtudiants, fb, groupeCounter }) {
         </div>
       </div>
 
-      {phase===2&&(
-        <>
-          <div className="delai-badge">🔓 DÉLAI DÉPASSÉ — OUVERT À TOUS</div>
-          <div className="phase-notice">
-            Places {nbAbj+1} à {nbEtudiants} désormais accessibles à <strong>ABJ</strong>.<br/>
-            Nouveau timer de 2 min en cours.
-          </div>
-        </>
-      )}
-
-      {/* Badge attente 10s */}
-      {showWaiting && missingCount > 0 && (
-        <div className="waiting-badge">
+      {/* Frame fixe unique — open-all (phase 2) + badge attente, sans conflit d'espace */}
+      <div className="waiting-frame">
+        <span className={`open-all ${phase===2 && !(showWaiting && missingCount>0) ? 'visible' : ''}`}>
+          OUVERT À TOUS
+        </span>
+        <div className={`waiting-badge ${showWaiting && missingCount > 0 ? 'visible' : ''}`}>
           <span className="waiting-text">
-            🕐 Groupe en attente de<br/>
-            <strong>{missingCount} membre{missingCount>1?'s':''}</strong>
+            🕐 En attente de <strong>{missingCount} membre{missingCount>1?'s':''}</strong>
           </span>
-          <button className="waiting-btn" onClick={()=>setShowWaiting(false)}>
+          <button className="waiting-btn" onClick={()=>{ setShowWaiting(false); clearTimeout(waitingRef.current); }}>
             REJOINDRE
           </button>
         </div>
-      )}
+      </div>
 
       <div className="slots">
         {slots.map((slot,i)=>{
