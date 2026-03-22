@@ -10,24 +10,18 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --bg:#07090f;--surface:#0e1018;--card:#13161f;--border:#232636;
-  --accent:#f5c842;--accent2:#e85d04;--green:#06d6a0;--red:#ef233c;
-  --blue:#4cc9f0;--text:#e4e6f0;--muted:#555877;
-}
-body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:28px 16px 80px;
-  background-image:radial-gradient(ellipse 70% 35% at 50% 0%,rgba(245,200,66,.07) 0%,transparent 55%),
-  repeating-linear-gradient(0deg,transparent,transparent 47px,rgba(255,255,255,.012) 48px),
-  repeating-linear-gradient(90deg,transparent,transparent 47px,rgba(255,255,255,.012) 48px);}
+:root{--bg:#07090f;--surface:#0e1018;--card:#13161f;--border:#232636;--accent:#f5c842;--accent2:#e85d04;--green:#06d6a0;--red:#ef233c;--blue:#4cc9f0;--text:#e4e6f0;--muted:#555877;}
+body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:28px 16px 80px;background-image:radial-gradient(ellipse 70% 35% at 50% 0%,rgba(245,200,66,.07) 0%,transparent 55%),repeating-linear-gradient(0deg,transparent,transparent 47px,rgba(255,255,255,.012) 48px),repeating-linear-gradient(90deg,transparent,transparent 47px,rgba(255,255,255,.012) 48px);}
 header{text-align:center;margin-bottom:36px;}
 header h1{font-size:clamp(1.8rem,5vw,3rem);font-weight:800;color:var(--accent);letter-spacing:-1px;text-shadow:0 0 50px rgba(245,200,66,.25);}
 header p{color:var(--muted);font-family:'Space Mono',monospace;font-size:.65rem;margin-top:7px;letter-spacing:2px;text-transform:uppercase;}
+.sync-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:6px;animation:pulse-dot 1.5s ease-in-out infinite;}
+@keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:.3;}}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:18px;max-width:1400px;margin:0 auto;}
 .pool-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px 16px 16px;position:relative;overflow:hidden;transition:border-color .3s;}
 .pool-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:0;transition:opacity .3s;}
-.pool-card.phase1-active::before{opacity:1;}.pool-card.phase1-active{border-color:rgba(245,200,66,.25);}
-.pool-card.phase2-active{border-color:rgba(76,201,240,.3);}
-.pool-card.phase2-active::before{background:linear-gradient(90deg,var(--blue),var(--green));opacity:1;}
+.pool-card.p1a::before{opacity:1;}.pool-card.p1a{border-color:rgba(245,200,66,.25);}
+.pool-card.p2a{border-color:rgba(76,201,240,.3);}.pool-card.p2a::before{background:linear-gradient(90deg,var(--blue),var(--green));opacity:1;}
 .pool-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
 .pool-title{font-size:1rem;font-weight:800;letter-spacing:1.5px;}
 .pool-count{font-family:'Space Mono',monospace;font-size:.65rem;color:var(--muted);background:var(--surface);padding:3px 8px;border-radius:20px;border:1px solid var(--border);}
@@ -35,685 +29,549 @@ header p{color:var(--muted);font-family:'Space Mono',monospace;font-size:.65rem;
 .timer-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
 .timer-label{font-family:'Space Mono',monospace;font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;display:flex;align-items:center;gap:6px;}
 .badge{font-size:.52rem;padding:2px 6px;border-radius:20px;letter-spacing:1px;}
-.b-wait{color:var(--muted);background:rgba(85,88,119,.1);border:1px solid rgba(85,88,119,.2);}
-.b-pause{color:var(--accent2);background:rgba(232,93,4,.12);border:1px solid rgba(232,93,4,.3);}
-.b-p2{color:var(--blue);background:rgba(76,201,240,.1);border:1px solid rgba(76,201,240,.3);}
-.timer-val{font-family:'Space Mono',monospace;font-size:.88rem;font-weight:700;color:var(--accent);}
-.timer-val.p{color:var(--accent2);}.timer-val.e{color:var(--red);}.timer-val.t{color:var(--blue);}
+.bw{color:var(--muted);background:rgba(85,88,119,.1);border:1px solid rgba(85,88,119,.2);}
+.bp{color:var(--accent2);background:rgba(232,93,4,.12);border:1px solid rgba(232,93,4,.3);}
+.bt{color:var(--blue);background:rgba(76,201,240,.1);border:1px solid rgba(76,201,240,.3);}
+.tv{font-family:'Space Mono',monospace;font-size:.88rem;font-weight:700;color:var(--accent);}
+.tv.p{color:var(--accent2);}.tv.e{color:var(--red);}.tv.t{color:var(--blue);}
 .timer-track{height:3px;background:var(--border);border-radius:4px;overflow:hidden;}
 .timer-fill{height:100%;border-radius:4px;transition:width .9s linear,background .4s;background:linear-gradient(90deg,var(--accent),var(--accent2));}
 .timer-fill.p{background:var(--accent2);}.timer-fill.e{background:var(--red);}.timer-fill.t{background:linear-gradient(90deg,var(--blue),var(--green));}
-.phase-notice{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--blue);background:rgba(76,201,240,.06);border:1px solid rgba(76,201,240,.2);border-radius:8px;padding:8px 10px;margin-bottom:10px;line-height:1.6;}
-.delai-badge{display:inline-flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;font-size:.62rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#ef233c,#e85d04);border-radius:8px;padding:6px 12px;margin-bottom:10px;width:100%;animation:pulse-badge 1.2s ease-in-out infinite alternate;}
-@keyframes pulse-badge{from{box-shadow:0 0 8px rgba(239,35,60,.3);}to{box-shadow:0 0 20px rgba(239,35,60,.7),0 0 40px rgba(232,93,4,.4);}}
-.wa-row{display:flex;gap:4px;align-items:center;}
-.code-select{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-family:'Space Mono',monospace;font-size:.65rem;font-weight:700;padding:7px 4px;width:62px;outline:none;cursor:pointer;flex-shrink:0;transition:border-color .2s;-webkit-appearance:none;text-align:center;}
-.code-select:focus{border-color:var(--accent);}.code-select option{background:#13161f;}
-.code-select.locked{background:#0d0f18!important;color:#2c2e42!important;border-color:#181a27!important;pointer-events:none;}
-.wa-input{flex:1;min-width:0;}
+.open-all{font-family:'Space Mono',monospace;font-size:.55rem;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s;pointer-events:none;}
+.open-all.show{opacity:1;}
+.waiting-frame{height:32px;margin-bottom:8px;position:relative;}
+.waiting-badge{position:absolute;inset:0;padding:4px 10px;border-radius:8px;background:rgba(239,35,60,.08);border:1px solid rgba(239,35,60,.25);display:flex;align-items:center;justify-content:space-between;gap:8px;opacity:0;pointer-events:none;transition:opacity .3s;}
+.waiting-badge.show{opacity:1;pointer-events:all;}
+.waiting-text{font-family:'Space Mono',monospace;font-size:.52rem;color:#ef233c;letter-spacing:.5px;line-height:1.3;}
+.waiting-btn{flex-shrink:0;padding:3px 8px;border:none;border-radius:6px;background:#ef233c;color:#fff;font-family:'Syne',sans-serif;font-weight:800;font-size:.55rem;cursor:pointer;letter-spacing:1px;animation:pred .8s ease-in-out infinite alternate;}
+@keyframes pred{from{box-shadow:0 0 6px rgba(239,35,60,.5);}to{box-shadow:0 0 18px rgba(239,35,60,.95);}}
 .slots{display:flex;flex-direction:column;gap:10px;margin-bottom:12px;}
 .slot{display:flex;flex-direction:column;gap:5px;}
 .slot-header{display:flex;align-items:center;gap:7px;margin-bottom:1px;}
 .slot-num{font-family:'Space Mono',monospace;font-size:.64rem;color:var(--muted);min-width:14px;}
-.badge-abj{font-family:'Space Mono',monospace;font-size:.53rem;padding:2px 7px;border-radius:20px;color:var(--accent);background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.3);font-weight:700;}
-.badge-hors{font-family:'Space Mono',monospace;font-size:.53rem;padding:2px 7px;border-radius:20px;color:var(--muted);background:rgba(85,88,119,.1);border:1px solid rgba(85,88,119,.25);}
+.ba{font-family:'Space Mono',monospace;font-size:.53rem;padding:2px 7px;border-radius:20px;color:var(--accent);background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.3);font-weight:700;}
+.bh{font-family:'Space Mono',monospace;font-size:.53rem;padding:2px 7px;border-radius:20px;color:var(--muted);background:rgba(85,88,119,.1);border:1px solid rgba(85,88,119,.25);}
 .slot-fields{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
-.field-group{display:flex;flex-direction:column;gap:3px;}
-.field-label{font-family:'Space Mono',monospace;font-size:.5rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;padding-left:2px;}
-input[type=text],input[type=tel]{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Syne',sans-serif;font-size:.75rem;padding:7px 9px;width:100%;outline:none;transition:border-color .2s,background .2s;}
-input[type=text]:focus,input[type=tel]:focus{border-color:var(--accent);background:rgba(245,200,66,.03);}
+.fg{display:flex;flex-direction:column;gap:3px;}
+.fl{font-family:'Space Mono',monospace;font-size:.5rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;padding-left:2px;}
+.wa-row{display:flex;gap:4px;align-items:center;}
+.cs{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-family:'Space Mono',monospace;font-size:.65rem;font-weight:700;padding:7px 4px;width:62px;outline:none;cursor:pointer;flex-shrink:0;-webkit-appearance:none;text-align:center;}
+.cs:focus{border-color:var(--accent);}.cs option{background:#13161f;}
+input[type=text],input[type=tel]{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Syne',sans-serif;font-size:.75rem;padding:7px 9px;width:100%;outline:none;transition:border-color .2s;}
+input[type=text]:focus,input[type=tel]:focus{border-color:var(--accent);}
 input[type=text]{text-transform:uppercase;}
-input.locked{background:#0d0f18!important;color:#2c2e42!important;border-color:#181a27!important;cursor:not-allowed;pointer-events:none;}
-.confirm-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--border);cursor:pointer;user-select:none;transition:border-color .2s;}
-.confirm-row:hover{border-color:rgba(6,214,160,.3);}
-.confirm-row input[type=checkbox]{width:14px;height:14px;accent-color:var(--green);cursor:pointer;flex-shrink:0;}
-.confirm-row span{font-size:.7rem;color:var(--muted);line-height:1.3;}
-.confirm-row.done span{color:var(--green);}.confirm-row.done{border-color:rgba(6,214,160,.25);}
-.publish-btn{width:100%;margin-top:10px;padding:10px;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-weight:800;font-size:.75rem;letter-spacing:1.5px;cursor:pointer;text-transform:uppercase;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;}
-.publish-btn:disabled{background:var(--surface);color:var(--muted);border:1px solid var(--border);cursor:not-allowed;}
-.publish-btn:not(:disabled){background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;box-shadow:0 4px 22px rgba(245,200,66,.2);}
-.publish-btn:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 7px 28px rgba(245,200,66,.35);}
-.publish-btn.blink{animation:blink-pub .7s ease-in-out infinite alternate;}
-@keyframes blink-pub{from{box-shadow:0 0 10px rgba(245,200,66,.4);transform:scale(1);}to{box-shadow:0 0 35px rgba(245,200,66,.95),0 0 60px rgba(232,93,4,.5);transform:scale(1.025);}}
-.published-section{max-width:1400px;margin:44px auto 0;}
+.cr{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--border);cursor:pointer;user-select:none;transition:border-color .2s;}
+.cr:hover{border-color:rgba(6,214,160,.3);}
+.cr input[type=checkbox]{width:14px;height:14px;accent-color:var(--green);cursor:pointer;flex-shrink:0;}
+.cr span{font-size:.7rem;color:var(--muted);line-height:1.3;}
+.cr.done span{color:var(--green);}.cr.done{border-color:rgba(6,214,160,.25);}
+.pub-btn{width:100%;margin-top:10px;padding:10px;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-weight:800;font-size:.75rem;letter-spacing:1.5px;cursor:pointer;text-transform:uppercase;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;}
+.pub-btn:disabled{background:var(--surface);color:var(--muted);border:1px solid var(--border);cursor:not-allowed;}
+.pub-btn:not(:disabled){background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;box-shadow:0 4px 22px rgba(245,200,66,.2);}
+.pub-btn:not(:disabled):hover{transform:translateY(-1px);}
+.pub-btn.blink{animation:bpulse .7s ease-in-out infinite alternate;}
+@keyframes bpulse{from{box-shadow:0 0 10px rgba(245,200,66,.4);}to{box-shadow:0 0 35px rgba(245,200,66,.95);transform:scale(1.025);}}
+.bravo-ov{position:absolute;inset:0;border-radius:16px;background:rgba(6,214,160,.93);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;z-index:10;opacity:0;pointer-events:none;transition:opacity .4s;}
+.bravo-ov.show{opacity:1;}
+.bravo-t{font-size:1.6rem;font-weight:800;color:#fff;letter-spacing:-1px;}
+.bravo-s{font-family:'Space Mono',monospace;font-size:.65rem;color:rgba(255,255,255,.85);letter-spacing:2px;text-transform:uppercase;}
+.settings-panel{max-width:1400px;margin:0 auto 28px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.settings-panel label{font-family:'Space Mono',monospace;font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;}
+.sg{display:flex;align-items:center;gap:10px;}
+.settings-panel input[type=number]{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-family:'Space Mono',monospace;font-weight:700;font-size:1.1rem;padding:6px 4px;width:48px;outline:none;text-align:center;-moz-appearance:textfield;}
+.settings-panel input[type=number]::-webkit-inner-spin-button,.settings-panel input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;}
+.cw{display:flex;align-items:center;gap:6px;}
+.cb{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--accent);font-size:1.2rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;user-select:none;}
+.cb:hover{background:rgba(245,200,66,.1);border-color:var(--accent);}
+.ssep{width:1px;height:36px;background:var(--border);}
+.sh{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);line-height:1.5;}
+.search-bar{max-width:1400px;margin:0 auto 20px;display:flex;align-items:center;gap:12px;}
+.search-wrap{position:relative;max-width:280px;}
+.search-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Space Mono',monospace;font-size:.8rem;padding:9px 14px 9px 36px;outline:none;transition:border-color .2s;}
+.search-input:focus{border-color:var(--accent);}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
+.snf{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--red);letter-spacing:1px;}
+.published-section{max-width:1400px;margin:0 auto;}
 .pub-heading{font-size:1.3rem;font-weight:800;color:var(--green);margin-bottom:18px;display:flex;align-items:center;gap:10px;}
 .pub-heading small{font-size:.7rem;color:var(--muted);font-weight:400;font-family:'Space Mono',monospace;}
 .pub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;}
-.pub-card{background:rgba(6,214,160,.04);border:1px solid rgba(6,214,160,.2);border-radius:12px;padding:14px;animation:pop .35s ease;position:relative;overflow:hidden;}
-.pub-card::before{content:'';position:absolute;inset:-2px;border-radius:14px;background:conic-gradient(from var(--angle,0deg),transparent 0deg,transparent 60deg,#00ff88 90deg,#afffdf 110deg,#ffffff 120deg,#afffdf 130deg,#00ff88 150deg,transparent 180deg,transparent 360deg);animation:spin-border 2.5s linear infinite;z-index:0;}
+.pub-card{background:rgba(6,214,160,.04);border:1px solid rgba(6,214,160,.2);border-radius:12px;padding:14px;animation:pop .35s ease;position:relative;overflow:hidden;transition:outline .2s;}
+.pub-card::before{content:'';position:absolute;inset:-2px;border-radius:14px;background:conic-gradient(from var(--a,0deg),transparent 0deg,transparent 60deg,#00ff88 90deg,#afffdf 110deg,#fff 120deg,#afffdf 130deg,#00ff88 150deg,transparent 180deg,transparent 360deg);animation:sb 2.5s linear infinite;z-index:0;}
 .pub-card::after{content:'';position:absolute;inset:2px;border-radius:12px;background:#0d1a14;z-index:1;}
 .pub-card>*{position:relative;z-index:2;}
-@property --angle{syntax:'<angle>';initial-value:0deg;inherits:false;}
-@keyframes spin-border{from{--angle:0deg;}to{--angle:360deg;}}
-.pub-card .gloss{position:absolute;inset:2px;border-radius:12px;background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,0) 50%,rgba(0,255,136,.04) 100%);pointer-events:none;z-index:3;}
+@property --a{syntax:'<angle>';initial-value:0deg;inherits:false;}
+@keyframes sb{from{--a:0deg;}to{--a:360deg;}}
+.gloss{position:absolute;inset:2px;border-radius:12px;background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,0) 50%,rgba(0,255,136,.04) 100%);pointer-events:none;z-index:3;}
+.pub-card.hl{outline:3px solid var(--accent);outline-offset:2px;}
 @keyframes pop{from{opacity:0;transform:translateY(10px) scale(.97);}to{opacity:1;transform:none;}}
-.pub-card h4{font-family:'Space Mono',monospace;font-size:.62rem;color:var(--green);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
-.pub-entry{display:flex;align-items:flex-start;gap:7px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);}
-.pub-entry:last-child{border:none;}
+.pc-head{font-family:'Space Mono',monospace;font-size:.62rem;color:var(--green);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.pe{display:flex;align-items:flex-start;gap:7px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.pe:last-child{border:none;}
 .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px;}
-.dot-a{background:var(--accent);}.dot-h{background:var(--muted);}
-.pub-info{flex:1;min-width:0;}
-.pub-name{font-size:.58rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0;}
-.pub-wa{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);margin-top:1px;}
-.pub-res{display:inline-block;margin-top:3px;font-family:'Space Mono',monospace;font-size:.56rem;padding:1px 6px;border-radius:4px;color:var(--accent);background:rgba(245,200,66,.08);}
-.pub-res.h{color:var(--muted);background:rgba(85,88,119,.1);}
-.share-row{display:flex;gap:8px;margin-top:10px;}
-.share-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:.68rem;letter-spacing:.5px;cursor:pointer;border:none;text-decoration:none;transition:all .2s;}
-.share-wa{background:#25d366;color:#fff;width:100%;justify-content:center;padding:7px 10px;font-size:.68rem;}
-.share-wa:hover{background:#1ebe5a;transform:translateY(-1px);box-shadow:0 4px 16px rgba(37,211,102,.35);}
-.share-wa.sending{background:#128c3e;cursor:wait;opacity:.85;transform:none;}
-.share-wa:disabled{cursor:wait;}
-/* SEARCH */
-.search-bar{max-width:1400px;margin:0 auto 24px;display:flex;align-items:center;gap:10px;}
-.search-wrap{position:relative;flex:1;max-width:320px;}
-.search-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Space Mono',monospace;font-size:.8rem;padding:9px 14px 9px 38px;outline:none;transition:border-color .2s;}
-.search-input:focus{border-color:var(--accent);}
-.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.85rem;pointer-events:none;}
-.search-not-found{font-family:'Space Mono',monospace;font-size:.62rem;color:var(--red);letter-spacing:1px;}
-.pub-card.highlighted{outline:3px solid var(--accent);outline-offset:3px;transition:outline .2s;}
-/* SETTINGS */
-.settings-panel{max-width:1400px;margin:0 auto 28px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
-.settings-panel label{font-family:'Space Mono',monospace;font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;}
-.set-group{display:flex;align-items:center;gap:10px;}
-.settings-panel input[type=number]{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-family:'Space Mono',monospace;font-weight:700;font-size:1.1rem;padding:6px 4px;width:48px;outline:none;text-align:center;transition:border-color .2s;-moz-appearance:textfield;}
-.settings-panel input[type=number]::-webkit-inner-spin-button,.settings-panel input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
-.settings-panel input[type=number]:focus{border-color:var(--accent);}
-.counter-wrap{display:flex;align-items:center;gap:6px;}
-.cnt-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--accent);font-size:1.2rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1;user-select:none;}
-.cnt-btn:hover{background:rgba(245,200,66,.1);border-color:var(--accent);transform:scale(1.08);}
-.cnt-btn:active{transform:scale(.95);}
-.settings-sep{width:1px;height:36px;background:var(--border);}
-.pays-select{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-family:'Space Mono',monospace;font-size:.72rem;padding:6px 10px;outline:none;cursor:pointer;transition:border-color .2s;}
-.pays-select:focus{border-color:var(--accent);}.pays-select option{background:#13161f;}
-.set-hint{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);line-height:1.5;}
-/* SYNC STATUS */
-.sync-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:6px;animation:pulse-dot 1.5s ease-in-out infinite;}
-@keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:.3;}}
-.sync-bar{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);text-align:center;padding:6px;letter-spacing:1px;}
+.da{background:var(--accent);}.dh{background:var(--muted);}
+.pi{flex:1;min-width:0;}
+.pn{font-size:.58rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pw{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);margin-top:1px;}
+.pr{display:inline-block;margin-top:3px;font-family:'Space Mono',monospace;font-size:.56rem;padding:1px 6px;border-radius:4px;color:var(--accent);background:rgba(245,200,66,.08);}
+.pr.h{color:var(--muted);background:rgba(85,88,119,.1);}
+.share-row{display:flex;margin-top:10px;}
+.swa{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 10px;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:.68rem;cursor:pointer;border:none;text-decoration:none;transition:all .2s;background:#25d366;color:#fff;width:100%;}
+.swa:hover{background:#1ebe5a;transform:translateY(-1px);}
 .loading-screen{display:flex;align-items:center;justify-content:center;min-height:60vh;flex-direction:column;gap:16px;}
 .loading-screen p{font-family:'Space Mono',monospace;color:var(--muted);font-size:.75rem;letter-spacing:2px;}
 .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
-/* WAITING STATUS - espace réservé fixe, ne redimensionne pas la carte */
-/* OPEN TO ALL - simple text */
-.phase-notice{display:none;}
-.delai-badge{display:none;}
-.open-all{font-family:'Space Mono',monospace;font-size:.55rem;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s;pointer-events:none;}
-.open-all.visible{opacity:1;}
-/* WAITING FRAME — espace fixe partagé open-all + badge */
-.waiting-frame{height:32px;margin-bottom:8px;position:relative;}
-.waiting-badge{position:absolute;inset:0;padding:4px 10px;border-radius:8px;background:rgba(239,35,60,.08);border:1px solid rgba(239,35,60,.25);display:flex;align-items:center;justify-content:space-between;gap:8px;opacity:0;pointer-events:none;transition:opacity .3s;}
-.waiting-badge.visible{opacity:1;pointer-events:all;}
-.waiting-text{font-family:'Space Mono',monospace;font-size:.52rem;color:#ef233c;letter-spacing:.5px;line-height:1.3;}
-.waiting-btn{flex-shrink:0;padding:3px 8px;border:none;border-radius:6px;background:#ef233c;color:#fff;font-family:'Syne',sans-serif;font-weight:800;font-size:.55rem;cursor:pointer;letter-spacing:1px;animation:pulse-red .8s ease-in-out infinite alternate;}
-@keyframes pulse-red{from{box-shadow:0 0 6px rgba(239,35,60,.5);}to{box-shadow:0 0 18px rgba(239,35,60,.95),0 0 30px rgba(239,35,60,.4);}}
-/* BRAVO OVERLAY */
-.bravo-overlay{position:absolute;inset:0;border-radius:16px;background:rgba(6,214,160,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;z-index:10;opacity:0;pointer-events:none;transition:opacity .4s;}
-.bravo-overlay.show{opacity:1;}
-.bravo-title{font-size:1.6rem;font-weight:800;color:#fff;letter-spacing:-1px;text-shadow:0 0 30px rgba(255,255,255,.5);}
-.bravo-sub{font-family:'Space Mono',monospace;font-size:.65rem;color:rgba(255,255,255,.85);letter-spacing:2px;text-transform:uppercase;}
+@keyframes spin{to{transform:rotate(360deg);}}
 </style>
 </head>
 <body>
 <div id="root"></div>
 
-<!-- Firebase SDK -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-  import { getDatabase, ref, set, onValue, update, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyAQ0chGSyDOFBT8hHfBI0CHNRn5ytEMI2A",
-    authDomain: "mon-inscription-groupe.firebaseapp.com",
-    databaseURL: "https://mon-inscription-groupe-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "mon-inscription-groupe",
-    storageBucket: "mon-inscription-groupe.firebasestorage.app",
-    messagingSenderId: "103124216989",
-    appId: "1:103124216989:web:124fdc6a8040c80b95f874"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db  = getDatabase(app);
-
-  // Exposer les fonctions Firebase globalement pour React (Babel non-module)
-  window._fb = { db, ref, set, onValue, update, remove };
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyAQ0chGSyDOFBT8hHfBI0CHNRn5ytEMI2A",
+  authDomain: "mon-inscription-groupe.firebaseapp.com",
+  databaseURL: "https://mon-inscription-groupe-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "mon-inscription-groupe",
+  storageBucket: "mon-inscription-groupe.firebasestorage.app",
+  messagingSenderId: "103124216989",
+  appId: "1:103124216989:web:124fdc6a8040c80b95f874"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+window._fb = { db, ref, set, onValue };
 </script>
 
 <script type="text/babel">
 const { useState, useEffect, useRef, useCallback } = React;
 
-// Attendre que Firebase soit prêt
-function waitForFB() {
-  return new Promise(resolve => {
-    const check = () => window._fb ? resolve(window._fb) : setTimeout(check, 50);
-    check();
-  });
-}
-
-const TIMER_TOTAL = 2 * 60;
+const TIMER_TOTAL = 120;
 const IDLE_PAUSE  = 15;
-const fmt = s => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+const fmt = s => String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
 
 const PAYS = [
-  { label:"🇨🇮 Côte d'Ivoire", code:'225', flag:'🇨🇮' },
-  { label:'🇸🇳 Sénégal',       code:'221', flag:'🇸🇳' },
-  { label:'🇧🇯 Bénin',         code:'229', flag:'🇧🇯' },
-  { label:'🇹🇬 Togo',          code:'228', flag:'🇹🇬' },
-  { label:'🇧🇫 Burkina Faso',  code:'226', flag:'🇧🇫' },
-  { label:'🇲🇱 Mali',          code:'223', flag:'🇲🇱' },
-  { label:'🇳🇪 Niger',         code:'227', flag:'🇳🇪' },
-  { label:'🇬🇳 Guinée',        code:'224', flag:'🇬🇳' },
-  { label:'🇨🇲 Cameroun',      code:'237', flag:'🇨🇲' },
-  { label:'🇫🇷 France',        code:'33',  flag:'🇫🇷' },
-  { label:'🇧🇪 Belgique',      code:'32',  flag:'🇧🇪' },
-  { label:'🇨🇦 Canada',        code:'1',   flag:'🇨🇦' },
+  {label:"CI",code:"225",flag:"🇨🇮"},{label:"SN",code:"221",flag:"🇸🇳"},
+  {label:"BJ",code:"229",flag:"🇧🇯"},{label:"TG",code:"228",flag:"🇹🇬"},
+  {label:"BF",code:"226",flag:"🇧🇫"},{label:"ML",code:"223",flag:"🇲🇱"},
+  {label:"NE",code:"227",flag:"🇳🇪"},{label:"GN",code:"224",flag:"🇬🇳"},
+  {label:"CM",code:"237",flag:"🇨🇲"},{label:"FR",code:"33", flag:"🇫🇷"},
+  {label:"BE",code:"32", flag:"🇧🇪"},{label:"CA",code:"1",  flag:"🇨🇦"},
 ];
-const flagByCode = Object.fromEntries(PAYS.map(p=>[p.code, p.flag]));
+const flagByCode = {};
+PAYS.forEach(function(p){ flagByCode[p.code] = p.flag; });
 
-const emptySlot  = () => ({ name:'', wa:'', code:'225', confirmed:false });
-const emptySlots = n  => Array.from({length:n}, emptySlot);
+function emptySlot(){ return {name:'',wa:'',code:'225',confirmed:false}; }
+function emptySlots(n){ var a=[]; for(var i=0;i<n;i++) a.push(emptySlot()); return a; }
 
-function toBoldItalic(str) {
-  const map={'0':'𝟎','1':'𝟏','2':'𝟐','3':'𝟑','4':'𝟒','5':'𝟓','6':'𝟔','7':'𝟕','8':'𝟖','9':'𝟗','+':'＋'};
-  return str.split('').map(c=>map[c]||c).join('');
-}
-
-const FLAG_NAMES = {
-  '225':'[CI]','221':'[SN]','229':'[BJ]','228':'[TG]','226':'[BF]',
-  '223':'[ML]','227':'[NE]','224':'[GN]','237':'[CM]','33':'[FR]',
-  '32':'[BE]','1':'[CA]'
-};
-
-function buildShareText(pub, nbEtudiants) {
-  const nbAbj = Math.ceil(nbEtudiants/2);
-  const lines = pub.slots.map((s,i)=>{
-    const res  = pub.phase===2?'ABJ':(i<nbAbj?'ABJ':'HORS ABJ');
-    const code = s.code||'225';
-    const flag = flagByCode[code]||'🌍';
-    const fname= FLAG_NAMES[code]||'';
-    const num  = '+'+code+s.wa.trim().replace(/\s+/g,'');
-    // On met le flag emoji + nom pays entre crochets pour garantir affichage
-    return `${i+1}. *${s.name}* (${res})\n   ${flag}${fname} Tel: ${num}`;
+function buildText(pub, nbE) {
+  var nbAbj = Math.ceil(nbE/2);
+  var lines = pub.slots.map(function(s,i){
+    var res = pub.phase===2?'ABJ':(i<nbAbj?'ABJ':'HORS ABJ');
+    var code = s.code||'225';
+    var flag = flagByCode[code]||'';
+    var num  = '+'+code+s.wa.trim().replace(/\s+/g,'');
+    return (i+1)+'. *'+s.name+'* ('+res+')\n   '+flag+' ['+code+'] Tel: '+num;
   });
-  return `📋 *Groupe #${pub.num}* — ${pub.time}\n\n${lines.join('\n\n')}`;
+  return '\ud83d\udccb *Groupe #'+pub.num+'* — '+pub.time+'\n\n'+lines.join('\n\n');
 }
 
-function ShareButtons({ pub, nbEtudiants }) {
-  const text  = buildShareText(pub, nbEtudiants);
-  const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+function waitFB(){ return new Promise(function(r){ (function c(){ window._fb?r(window._fb):setTimeout(c,50); })(); }); }
+
+function ShareBtn(props) {
+  var text = buildText(props.pub, props.nbE);
+  var url  = 'https://wa.me/?text='+encodeURIComponent(text);
   return (
-    <div className="share-row">
-      <a className="share-btn share-wa" href={waUrl} target="_blank" rel="noopener noreferrer">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        📲 Partager
-      </a>
-    </div>
+    React.createElement('div', {className:'share-row'},
+      React.createElement('a', {className:'swa', href:url, target:'_blank', rel:'noopener noreferrer'},
+        React.createElement('svg', {width:15, height:15, viewBox:'0 0 24 24', fill:'currentColor'},
+          React.createElement('path', {d:'M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z'})
+        ),
+        '\ud83d\udcf2 Partager'
+      )
+    )
   );
 }
 
-// ─── POOL CARD ─────────────────────────────────────────────────────────────
-function PoolCard({ idx, nbEtudiants, fb, groupeCounter }) {
-  const nbAbj = Math.ceil(nbEtudiants/2);
-  const cardKey = `card_${idx}`;
+function PoolCard(props) {
+  var idx = props.idx, nbE = props.nbE, fb = props.fb;
+  var nbAbj = Math.ceil(nbE/2);
+  var cardKey = 'card_'+idx;
 
-  // État local (timer)
-  const [slots,         setSlots]         = useState(emptySlots(nbEtudiants));
-  const [phase,         setPhase]         = useState(1);
-  const [timeLeft,      setTimeLeft]      = useState(TIMER_TOTAL);
-  const [running,       setRunning]       = useState(false);
-  const [paused,        setPaused]        = useState(false);
-  const [expired,       setExpired]       = useState(false);
-  const [activeEditors, setActiveEditors] = useState(0);
-  const [fbReady,       setFbReady]       = useState(false);
-  const [showWaiting,   setShowWaiting]   = useState(false);
+  var s0 = useState(function(){ return emptySlots(nbE); });
+  var slots = s0[0], setSlots = s0[1];
+  var s1 = useState(1); var phase = s1[0], setPhase = s1[1];
+  var s2 = useState(TIMER_TOTAL); var timeLeft = s2[0], setTimeLeft = s2[1];
+  var s3 = useState(false); var running = s3[0], setRunning = s3[1];
+  var s4 = useState(false); var paused = s4[0], setPaused = s4[1];
+  var s5 = useState(false); var expired = s5[0], setExpired = s5[1];
+  var s6 = useState(false); var fbReady = s6[0], setFbReady = s6[1];
+  var s7 = useState(false); var showWait = s7[0], setShowWait = s7[1];
+  var s8 = useState(false); var showBravo = s8[0], setShowBravo = s8[1];
+  var s9 = useState(0); var activeEd = s9[0], setActiveEd = s9[1];
 
-  const timerRef      = useRef(null);
-  const idleRef       = useRef(null);
-  const runningRef    = useRef(false);
-  const pausedRef     = useRef(false);
-  const activeEditRef = useRef(0);
-  const writingRef    = useRef(false);
-  const waitingRef    = useRef(null); // boucle 5s inactivité
+  var timerRef = useRef(null);
+  var idleRef  = useRef(null);
+  var loopRef  = useRef(null);
+  var wRef     = useRef(false);
+  var runRef   = useRef(false);
+  var pausRef  = useRef(false);
+  var aeRef    = useRef(0);
 
-  useEffect(()=>{ runningRef.current=running; },[running]);
-  useEffect(()=>{ pausedRef.current=paused;   },[paused]);
-  useEffect(()=>{ activeEditRef.current=activeEditors; },[activeEditors]);
+  useEffect(function(){ runRef.current=running; },[running]);
+  useEffect(function(){ pausRef.current=paused; },[paused]);
+  useEffect(function(){ aeRef.current=activeEd; },[activeEd]);
 
-  // ── Charger l'état depuis Firebase ──
-  useEffect(()=>{
+  // Load from Firebase
+  useEffect(function(){
     if (!fb) return;
-    const { ref, onValue } = fb;
-    const cardRef = ref(fb.db, `cards/${cardKey}`);
-    const unsub = onValue(cardRef, snap => {
-      const data = snap.val();
-      if (!data) { setFbReady(true); return; }
-      writingRef.current = true;
-      setSlots(data.slots || emptySlots(nbEtudiants));
+    var r = fb.ref(fb.db, 'cards/'+cardKey);
+    var unsub = fb.onValue(r, function(snap){
+      var data = snap.val();
+      if (!data){ setFbReady(true); return; }
+      wRef.current = true;
+      setSlots(data.slots || emptySlots(nbE));
       setPhase(data.phase || 1);
       setFbReady(true);
-      setTimeout(()=>{ writingRef.current=false; }, 200);
+      setTimeout(function(){ wRef.current=false; }, 200);
     });
-    return ()=> unsub();
+    return function(){ unsub(); };
   }, [fb, cardKey]);
 
-  // ── Sauvegarder dans Firebase ──
-  const saveToFB = useCallback((newSlots, newPhase) => {
-    if (!fb || writingRef.current) return;
-    const { ref, set } = fb;
-    set(ref(fb.db, `cards/${cardKey}`), {
-      slots: newSlots,
-      phase: newPhase,
-      updatedAt: Date.now()
-    });
+  var saveDB = useCallback(function(ns, np){
+    if (!fb || wRef.current) return;
+    fb.set(fb.ref(fb.db,'cards/'+cardKey), {slots:ns, phase:np, updatedAt:Date.now()});
   }, [fb, cardKey]);
 
-  const resOf = i => phase===2?'ABJ':i<nbAbj?'ABJ':'HORS ABJ';
-
-  const startTimer = useCallback(()=>{
+  var startTimer = useCallback(function(){
     clearInterval(timerRef.current);
     clearTimeout(idleRef.current);
     setTimeLeft(TIMER_TOTAL);
     setExpired(false);
     setPaused(false);
     setRunning(true);
-  },[]);
+  }, []);
 
-  useEffect(()=>{
+  useEffect(function(){
     if (!running||paused||expired) return;
-    timerRef.current = setInterval(()=>{
-      setTimeLeft(t=>{
+    timerRef.current = setInterval(function(){
+      setTimeLeft(function(t){
         if (t<=1){ clearInterval(timerRef.current); setExpired(true); setRunning(false); return 0; }
         return t-1;
       });
-    },1000);
-    return ()=>clearInterval(timerRef.current);
-  },[running,paused,expired]);
+    }, 1000);
+    return function(){ clearInterval(timerRef.current); };
+  }, [running, paused, expired]);
 
-  useEffect(()=>{
-    if (expired&&phase===1){ setPhase(2); setTimeout(startTimer,400); }
-  },[expired,phase]);
+  useEffect(function(){
+    if (expired && phase===1){ setPhase(2); setTimeout(startTimer, 400); }
+  }, [expired, phase]);
 
-  const pauseTimer = useCallback(()=>{
-    if (!runningRef.current) return;
-    clearInterval(timerRef.current);
-    setPaused(true);
-  },[]);
-
-  const resumeTimer = useCallback(()=>{
-    if (!runningRef.current) return;
-    if (activeEditRef.current>0) return;
-    clearTimeout(idleRef.current);
-    idleRef.current = setTimeout(()=>setPaused(false), IDLE_PAUSE*1000);
-  },[]);
-
-  const onFocusField = useCallback(()=>{
-    setActiveEditors(n=>{ const nx=n+1; activeEditRef.current=nx; pauseTimer(); return nx; });
-  },[pauseTimer]);
-
-  const onBlurField = useCallback(()=>{
-    setActiveEditors(n=>{ const nx=Math.max(0,n-1); activeEditRef.current=nx; if(nx===0) resumeTimer(); return nx; });
-    // Relancer le cycle 5s après la fin de saisie
-    clearTimeout(waitingRef.current);
-    waitingRef.current = setTimeout(()=>{
-      if (activeEditRef.current > 0) return;
-      setShowWaiting(true);
-    }, 5000);
-  },[resumeTimer]);
-
-  const onFocusFieldWrap = useCallback((e)=>{
-    onFocusField(e);
-    // Masquer badge et stopper cycle pendant saisie active
-    clearTimeout(waitingRef.current);
-    setShowWaiting(false);
-  },[onFocusField]);
-
-  // Cycle 5s universel — fonctionne que le timer soit en cours ou non
-  // Déclenche si membres manquants et aucune saisie active
-  useEffect(()=>{
+  // 5s loop
+  useEffect(function(){
     if (!fbReady) return;
-    const loop = setInterval(()=>{
-      if (activeEditRef.current > 0) return; // saisie en cours → skip
-      const unconfirmed = slots.filter(s=>!s.confirmed).length;
-      if (unconfirmed === 0) return; // tous confirmés → skip
-      setShowWaiting(true);
-      setTimeout(()=>setShowWaiting(false), 2500); // masquer après 2.5s
+    loopRef.current = setInterval(function(){
+      if (aeRef.current > 0) return;
+      var slotsNow = null;
+      setSlots(function(cur){ slotsNow=cur; return cur; });
+      if (!slotsNow) return;
+      var unconf = slotsNow.filter(function(s){ return !s.confirmed; }).length;
+      if (unconf===0) return;
+      setShowWait(true);
+      setTimeout(function(){ setShowWait(false); }, 2500);
     }, 5000);
-    return ()=>clearInterval(loop);
-  },[fbReady, slots]);
+    return function(){ clearInterval(loopRef.current); };
+  }, [fbReady]);
 
-  const [showBravo, setShowBravo] = useState(false);
+  function onFocus(){
+    setActiveEd(function(n){ var nx=n+1; aeRef.current=nx; return nx; });
+    setShowWait(false);
+  }
+  function onBlur(){
+    setActiveEd(function(n){ var nx=Math.max(0,n-1); aeRef.current=nx; return nx; });
+  }
 
-  const toggleConfirm = i => {
-    setSlots(prev=>{
-      const next = prev.map((s,j)=>j===i?{...s,confirmed:!s.confirmed}:s);
-      if (phase===1&&!runningRef.current&&!expired){
-        const ok = next.slice(0,nbAbj).every(s=>s.name.trim()&&s.wa.trim()&&s.confirmed);
-        if (ok) setTimeout(startTimer,50);
+  function toggleConfirm(i){
+    setSlots(function(prev){
+      var next = prev.map(function(s,j){ return j===i?Object.assign({},s,{confirmed:!s.confirmed}):s; });
+      if (phase===1&&!runRef.current&&!expired){
+        var ok = next.slice(0,nbAbj).every(function(s){ return s.name.trim()&&s.wa.trim()&&s.confirmed; });
+        if (ok) setTimeout(startTimer, 50);
       }
-      if (runningRef.current&&pausedRef.current&&activeEditRef.current===0){
+      if (runRef.current&&pausRef.current&&aeRef.current===0){
         clearTimeout(idleRef.current);
-        setTimeout(()=>setPaused(false),100);
+        setTimeout(function(){ setPaused(false); }, 100);
       }
-      saveToFB(next, phase);
-      // Déclencher BRAVO si tous confirmés
-      const allDone = next.every(s=>s.name.trim()&&s.wa.trim()&&s.confirmed);
-      if (allDone) { setShowBravo(true); setTimeout(()=>setShowBravo(false), 3500); }
+      saveDB(next, phase);
+      var allDone = next.every(function(s){ return s.name.trim()&&s.wa.trim()&&s.confirmed; });
+      if (allDone){ setShowBravo(true); setTimeout(function(){ setShowBravo(false); }, 3500); }
       return next;
     });
-  }; = (i,field,val)=>{
-    setSlots(prev=>{
-      const next = prev.map((s,j)=>j===i?{...s,[field]:val}:s);
-      saveToFB(next, phase);
+  }
+
+  function updateField(i, field, val){
+    setSlots(function(prev){
+      var next = prev.map(function(s,j){ return j===i?Object.assign({},s,function(){ var o={}; o[field]=val; return o; }()):s; });
+      saveDB(next, phase);
       return next;
     });
-  };
+  }
 
-  const tState       = expired?'e':paused?'p':phase===2?'t':'';
-  const pct          = (timeLeft/TIMER_TOTAL)*100;
-  const slot23Locked = false;
-  const canPublish   = slots.every(s=>s.name.trim()&&s.wa.trim()&&s.confirmed);
-  const simultane    = activeEditors>=2;
-  const filledCount  = slots.filter(s=>s.name.trim()).length;
-  const missingCount = nbEtudiants - filledCount;
-
-  const handlePublish = ()=>{
+  function handlePublish(){
     if (!fb) return;
-    // Incrémenter compteur global dans Firebase
-    const { ref, set, onValue } = fb;
-    const counterRef = ref(fb.db, 'groupeCounter');
-    onValue(counterRef, snap=>{
-      const current = snap.val()||0;
-      const num = current+1;
-      set(counterRef, num);
-
-      // Sauvegarder le groupe publié
-      const pubRef = ref(fb.db, `published/${num}`);
-      set(pubRef, {
-        num,
-        slots,
-        phase,
+    var r = fb.ref(fb.db, 'groupeCounter');
+    fb.onValue(r, function(snap){
+      var cur = snap.val()||0;
+      var num = cur+1;
+      fb.set(fb.ref(fb.db,'groupeCounter'), num);
+      fb.set(fb.ref(fb.db,'published/'+num), {
+        num:num, slots:slots, phase:phase,
         time: new Date().toLocaleTimeString('fr-FR'),
         publishedAt: Date.now()
       });
-
-      // Réinitialiser la carte
-      const cardRef = ref(fb.db, `cards/${cardKey}`);
-      set(cardRef, { slots: emptySlots(nbEtudiants), phase:1, updatedAt:Date.now() });
-
-      setTimeout(()=>{
-        const el = document.getElementById(`pub-${num}`);
-        if (el) el.scrollIntoView({behavior:'smooth',block:'center'});
+      fb.set(fb.ref(fb.db,'cards/'+cardKey), {slots:emptySlots(nbE), phase:1, updatedAt:Date.now()});
+      setTimeout(function(){
+        var el = document.getElementById('pub-'+num);
+        if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
       }, 400);
-    }, { onlyOnce: true });
-
-    setSlots(emptySlots(nbEtudiants));
-    setPhase(1); setTimeLeft(TIMER_TOTAL);
-    setRunning(false); setPaused(false); setExpired(false); setActiveEditors(0);
+    }, {onlyOnce:true});
+    setSlots(emptySlots(nbE)); setPhase(1); setTimeLeft(TIMER_TOTAL);
+    setRunning(false); setPaused(false); setExpired(false);
     clearInterval(timerRef.current); clearTimeout(idleRef.current);
-  };
+  }
+
+  var tState = expired?'e':paused?'p':phase===2?'t':'';
+  var pct = (timeLeft/TIMER_TOTAL)*100;
+  var canPub = slots.every(function(s){ return s.name.trim()&&s.wa.trim()&&s.confirmed; });
+  var filled = slots.filter(function(s){ return s.name.trim(); }).length;
+  var missing = nbE - filled;
 
   if (!fbReady) return (
-    <div className="pool-card">
-      <div style={{textAlign:'center',padding:'20px',color:'var(--muted)',fontFamily:'Space Mono',fontSize:'.6rem'}}>
-        ⏳ Chargement...
-      </div>
-    </div>
+    React.createElement('div', {className:'pool-card'},
+      React.createElement('div', {style:{textAlign:'center',padding:'20px',color:'var(--muted)',fontFamily:'Space Mono',fontSize:'.6rem'}}, '\u23f3 Chargement...')
+    )
   );
 
   return (
-    <div className={`pool-card ${running&&phase===1?'phase1-active':''} ${phase===2?'phase2-active':''}`}>
-
-      {/* Overlay BRAVO */}
-      <div className={`bravo-overlay ${showBravo?'show':''}`}>
-        <div className="bravo-title">🎉 BRAVO !</div>
-        <div className="bravo-sub">Bonne chance à tous</div>
-      </div>
-      <div className="pool-header">
-        <span className="pool-title">GROUPE #</span>
-        <span className="pool-count">{slots.filter(s=>s.name.trim()).length}/{nbEtudiants}</span>
-      </div>
-
-      <div className="timer-wrap">
-        <div className="timer-top">
-          <span className="timer-label">
-            Timer
-            {!running&&!expired&&phase===1 && <span className="badge b-wait">EN ATTENTE</span>}
-            {running&&paused&&!simultane   && <span className="badge b-pause">⏸ PAUSE {IDLE_PAUSE}s</span>}
-            {running&&simultane            && <span className="badge b-pause">⏸ SAISIE SIMULTANÉE</span>}
-            {phase===2                     && <span className="badge b-p2">PHASE 2 · ABJ</span>}
-          </span>
-          <span className={`timer-val ${tState}`}>
-            {!running&&!expired&&phase===1?'--:--':fmt(timeLeft)}
-          </span>
-        </div>
-        <div className="timer-track">
-          <div className={`timer-fill ${tState}`} style={{width:`${(running||expired)?pct:0}%`}}/>
-        </div>
-      </div>
-
-      {/* Frame fixe unique — open-all (phase 2) + badge attente, sans conflit d'espace */}
-      <div className="waiting-frame">
-        <span className={`open-all ${phase===2 && !(showWaiting && missingCount>0) ? 'visible' : ''}`}>
-          OUVERT À TOUS
-        </span>
-        <div className={`waiting-badge ${showWaiting && missingCount > 0 ? 'visible' : ''}`}>
-          <span className="waiting-text">
-            🕐 En attente de <strong>{missingCount} membre{missingCount>1?'s':''}</strong>
-          </span>
-          <button className="waiting-btn" onClick={()=>{ setShowWaiting(false); clearTimeout(waitingRef.current); }}>
-            REJOINDRE
-          </button>
-        </div>
-      </div>
-
-      <div className="slots">
-        {slots.map((slot,i)=>{
-          const res    = resOf(i);
-          const isAbj  = res==='ABJ';
-          const locked = i>=nbAbj&&slot23Locked;
-          return (
-            <div className="slot" key={i}>
-              <div className="slot-header">
-                <span className="slot-num">{i+1}</span>
-                <span className={isAbj?'badge-abj':'badge-hors'}>{isAbj?'🟡 ABJ':'⚫ HORS ABJ'}</span>
-                {locked&&<span style={{fontFamily:'Space Mono',fontSize:'.5rem',color:'var(--muted)'}}>🔒 en attente</span>}
-              </div>
-              <div className="slot-fields">
-                <div className="field-group">
-                  <span className="field-label">Nom complet</span>
-                  <input type="text" placeholder="Prénom Nom" value={slot.name}
-                    className={locked?'locked':''} disabled={locked}
-                    onFocus={onFocusFieldWrap} onBlur={onBlurField}
-                    onChange={e=>updateField(i,'name',e.target.value.toUpperCase())}/>
-                </div>
-                <div className="field-group">
-                  <span className="field-label">WhatsApp</span>
-                  <div className={`wa-row${locked?' locked-wrap':''}`}>
-                    <select className={`code-select${locked?' locked':''}`} value={slot.code}
-                      disabled={locked} onChange={e=>updateField(i,'code',e.target.value)}>
-                      {PAYS.map(p=><option key={p.code} value={p.code}>+{p.code}</option>)}
-                    </select>
-                    <input type="tel" placeholder="07 00 00 00" value={slot.wa}
-                      className={`wa-input${locked?' locked':''}`} disabled={locked}
-                      onFocus={onFocusFieldWrap} onBlur={onBlurField}
-                      onChange={e=>updateField(i,'wa',e.target.value)}/>
-                  </div>
-                </div>
-              </div>
-              <div className={`confirm-row ${slot.confirmed?'done':''}`}
-                onClick={()=>{ if(!locked){ setShowWaiting(false); clearTimeout(waitingRef.current); toggleConfirm(i); }}}
-                style={locked?{opacity:.35,pointerEvents:'none'}:{}}>
-                <input type="checkbox" checked={slot.confirmed} onChange={()=>{}}
-                  onClick={e=>{e.stopPropagation();if(!locked){setShowWaiting(false);clearTimeout(waitingRef.current);toggleConfirm(i);}}}/>
-                <span>{slot.confirmed?`✅ Confirmé — ${isAbj?'Abidjan':'Hors Abidjan'}`:'Cochez pour confirmer votre saisie'}</span>
-              </div>
-            </div>
+    React.createElement('div', {className:'pool-card '+(running&&phase===1?'p1a':'')+(phase===2?' p2a':'')},
+      React.createElement('div', {className:'bravo-ov '+(showBravo?'show':'')},
+        React.createElement('div', {className:'bravo-t'}, '\ud83c\udf89 BRAVO !'),
+        React.createElement('div', {className:'bravo-s'}, 'Bonne chance \xe0 tous')
+      ),
+      React.createElement('div', {className:'pool-header'},
+        React.createElement('span', {className:'pool-title'}, 'GROUPE #'),
+        React.createElement('span', {className:'pool-count'}, filled+'/'+nbE)
+      ),
+      React.createElement('div', {className:'timer-wrap'},
+        React.createElement('div', {className:'timer-top'},
+          React.createElement('span', {className:'timer-label'},
+            'Timer',
+            !running&&!expired&&phase===1 && React.createElement('span', {className:'badge bw'}, 'EN ATTENTE'),
+            running&&paused && React.createElement('span', {className:'badge bp'}, '\u23f8 PAUSE'),
+            phase===2 && React.createElement('span', {className:'badge bt'}, 'PHASE 2')
+          ),
+          React.createElement('span', {className:'tv '+(tState)},
+            !running&&!expired&&phase===1?'--:--':fmt(timeLeft)
+          )
+        ),
+        React.createElement('div', {className:'timer-track'},
+          React.createElement('div', {className:'timer-fill '+(tState), style:{width:(running||expired?pct:0)+'%'}})
+        )
+      ),
+      React.createElement('div', {className:'waiting-frame'},
+        React.createElement('span', {className:'open-all '+(phase===2&&!showWait?'show':'')}, 'OUVERT \xc0 TOUS'),
+        React.createElement('div', {className:'waiting-badge '+(showWait&&missing>0?'show':'')},
+          React.createElement('span', {className:'waiting-text'},
+            '\ud83d\udd50 En attente de ',
+            React.createElement('strong', null, missing+' membre'+(missing>1?'s':''))
+          ),
+          React.createElement('button', {className:'waiting-btn', onClick:function(){ setShowWait(false); }}, 'REJOINDRE')
+        )
+      ),
+      React.createElement('div', {className:'slots'},
+        slots.map(function(slot, i){
+          var isAbj = phase===2 || i<nbAbj;
+          return React.createElement('div', {className:'slot', key:i},
+            React.createElement('div', {className:'slot-header'},
+              React.createElement('span', {className:'slot-num'}, i+1),
+              React.createElement('span', {className:isAbj?'ba':'bh'}, isAbj?'\ud83d\udfe1 ABJ':'\u26ab HORS ABJ')
+            ),
+            React.createElement('div', {className:'slot-fields'},
+              React.createElement('div', {className:'fg'},
+                React.createElement('span', {className:'fl'}, 'Nom complet'),
+                React.createElement('input', {type:'text', placeholder:'Pr\xe9nom Nom', value:slot.name,
+                  onFocus:onFocus, onBlur:onBlur,
+                  onChange:function(e){ updateField(i,'name',e.target.value.toUpperCase()); }})
+              ),
+              React.createElement('div', {className:'fg'},
+                React.createElement('span', {className:'fl'}, 'WhatsApp'),
+                React.createElement('div', {className:'wa-row'},
+                  React.createElement('select', {className:'cs', value:slot.code,
+                    onChange:function(e){ updateField(i,'code',e.target.value); }},
+                    PAYS.map(function(p){ return React.createElement('option', {key:p.code, value:p.code}, '+'+p.code); })
+                  ),
+                  React.createElement('input', {type:'tel', placeholder:'07 00 00 00', value:slot.wa,
+                    className:'wa-input', onFocus:onFocus, onBlur:onBlur,
+                    onChange:function(e){ updateField(i,'wa',e.target.value); }})
+                )
+              )
+            ),
+            React.createElement('div', {
+              className:'cr '+(slot.confirmed?'done':''),
+              onClick:function(){ toggleConfirm(i); }
+            },
+              React.createElement('input', {type:'checkbox', checked:slot.confirmed, onChange:function(){},
+                onClick:function(e){ e.stopPropagation(); toggleConfirm(i); }}),
+              React.createElement('span', null, slot.confirmed?'\u2705 Confirm\xe9 — '+(isAbj?'Abidjan':'Hors Abidjan'):'Cochez pour confirmer votre saisie')
+            )
           );
-        })}
-      </div>
-
-      <button className={`publish-btn ${canPublish?'blink':''}`} disabled={!canPublish} onClick={handlePublish}>
-        📋 Publier la liste
-      </button>
-    </div>
+        })
+      ),
+      React.createElement('button', {
+        className:'pub-btn '+(canPub?'blink':''),
+        disabled:!canPub,
+        onClick:handlePublish
+      }, '\ud83d\udccb Publier la liste')
+    )
   );
 }
 
-// ─── APP ───────────────────────────────────────────────────────────────────
 function App() {
-  const [fb,           setFb]           = useState(null);
-  const [published,    setPublished]    = useState([]);
-  const [nbEtudiants,  setNbEtudiants]  = useState(4);
-  const [nbCartes,     setNbCartes]     = useState(10);
-  const [loading,      setLoading]      = useState(true);
-  const [searchVal,    setSearchVal]    = useState('');
-  const [searchNotFound, setSearchNotFound] = useState(false);
+  var s0 = useState(null); var fb = s0[0], setFb = s0[1];
+  var s1 = useState([]); var published = s1[0], setPublished = s1[1];
+  var s2 = useState(4); var nbE = s2[0], setNbE = s2[1];
+  var s3 = useState(10); var nbC = s3[0], setNbC = s3[1];
+  var s4 = useState(true); var loading = s4[0], setLoading = s4[1];
+  var s5 = useState(''); var searchVal = s5[0], setSearchVal = s5[1];
+  var s6 = useState(false); var snf = s6[0], setSnf = s6[1];
 
-  // Init Firebase
-  useEffect(()=>{
-    waitForFB().then(fb=>{ setFb(fb); });
-  },[]);
+  useEffect(function(){
+    waitFB().then(function(f){ setFb(f); });
+  }, []);
 
-  // Écouter les groupes publiés en temps réel
-  useEffect(()=>{
+  useEffect(function(){
     if (!fb) return;
-    const { ref, onValue } = fb;
-    const pubRef = ref(fb.db, 'published');
-    const unsub = onValue(pubRef, snap=>{
-      const data = snap.val();
-      if (data) {
-        const list = Object.values(data).sort((a,b)=>a.num-b.num);
+    var r = fb.ref(fb.db, 'published');
+    var unsub = fb.onValue(r, function(snap){
+      var data = snap.val();
+      if (data){
+        var list = Object.values(data).sort(function(a,b){ return a.num-b.num; });
         setPublished(list);
-      } else {
-        setPublished([]);
-      }
+      } else { setPublished([]); }
       setLoading(false);
     });
-    return ()=>unsub();
-  },[fb]);
+    return function(){ unsub(); };
+  }, [fb]);
 
-  const nbAbj = Math.ceil(nbEtudiants/2);
-
-  const handleSearch = (val) => {
+  function handleSearch(val){
     setSearchVal(val);
-    setSearchNotFound(false);
-    const num = parseInt(val);
-    if (!val.trim() || isNaN(num)) return;
-    const found = published.find(p => p.num === num);
-    if (found) {
-      setTimeout(()=>{
-        const el = document.getElementById(`pub-${num}`);
-        if (el) {
-          el.scrollIntoView({ behavior:'smooth', block:'center' });
-          el.classList.add('highlighted');
-          setTimeout(()=>el.classList.remove('highlighted'), 2500);
+    setSnf(false);
+    var num = parseInt(val);
+    if (!val.trim()||isNaN(num)) return;
+    var found = published.find(function(p){ return p.num===num; });
+    if (found){
+      setTimeout(function(){
+        var el = document.getElementById('pub-'+num);
+        if (el){
+          el.scrollIntoView({behavior:'smooth', block:'center'});
+          el.classList.add('hl');
+          setTimeout(function(){ el.classList.remove('hl'); }, 2500);
         }
       }, 100);
     } else {
-      setSearchNotFound(true);
-      setTimeout(()=>setSearchNotFound(false), 2500);
+      setSnf(true);
+      setTimeout(function(){ setSnf(false); }, 2500);
     }
-  };
+  }
+
+  var nbAbj = Math.ceil(nbE/2);
 
   if (loading) return (
-    <div className="loading-screen">
-      <div className="spinner"/>
-      <p>CONNEXION EN COURS...</p>
-    </div>
+    React.createElement('div', {className:'loading-screen'},
+      React.createElement('div', {className:'spinner'}),
+      React.createElement('p', null, 'CONNEXION EN COURS...')
+    )
   );
 
-  return (
-    <div>
-      <header>
-        <h1>⚡ INSCRIPTION GROUPES</h1>
-        <p><span className="sync-dot"/>EN DIRECT · Timer 2 min · WhatsApp requis</p>
-      </header>
-
-      <div className="settings-panel">
-        <div className="set-group">
-          <label>👥 Étudiants / groupe</label>
-          <div className="counter-wrap">
-            <button className="cnt-btn" onClick={()=>setNbEtudiants(n=>Math.max(2,n-1))}>−</button>
-            <input type="number" min="2" max="20" value={nbEtudiants} readOnly/>
-            <button className="cnt-btn" onClick={()=>setNbEtudiants(n=>Math.min(20,n+1))}>+</button>
-          </div>
-        </div>
-        <div className="settings-sep"/>
-        <div className="set-group">
-          <label>🗂️ Nombre de cartes</label>
-          <div className="counter-wrap">
-            <button className="cnt-btn" onClick={()=>setNbCartes(n=>Math.max(10,n-1))}>−</button>
-            <input type="number" min="10" max="50" value={nbCartes} readOnly/>
-            <button className="cnt-btn" onClick={()=>setNbCartes(n=>Math.min(50,n+1))}>+</button>
-          </div>
-        </div>
-        <div className="settings-sep"/>
-        <div className="set-hint">
-          {nbAbj} place{nbAbj>1?'s':''} ABJ · {nbEtudiants-nbAbj} Hors Abj<br/>
-          Données synchronisées en temps réel 🔥
-        </div>
-      </div>
-
-      <div className="grid">
-        {Array.from({length:nbCartes},(_,i)=>(
-          <PoolCard key={`${i}-${nbEtudiants}`} idx={i} nbEtudiants={nbEtudiants} fb={fb} groupeCounter={null}/>
-        ))}
-      </div>
-
-      {published.length>0&&(
-        <>
-        <div className="search-bar">
-          <div className="search-wrap">
-            <span className="search-icon">🔍</span>
-            <input
-              className="search-input"
-              type="number"
-              placeholder="N° groupe…"
-              value={searchVal}
-              onChange={e=>handleSearch(e.target.value)}
-              min="1"
-            />
-          </div>
-          {searchNotFound && <span className="search-not-found">{'❌ Groupe #'+searchVal+' introuvable'}</span>}
-        </div>
-
-        <div className="published-section">
-          <div className="pub-heading">
-            ✅ Groupes Publiés
-            <small>{published.length} groupe{published.length>1?'s':''}</small>
-          </div>
-          <div className="pub-grid">
-            {published.map(pub=>{
-              const nAbj=Math.ceil(nbEtudiants/2);
-              return (
-                <div className="pub-card" id={`pub-${pub.num}`} key={pub.num}>
-                  <div className="gloss"/>
-                  <h4>{'Groupe #'+pub.num+' · '+pub.time}</h4>
-                  {pub.slots.map((s,i)=>{
-                    const res=pub.phase===2?'ABJ':(i<nAbj?'ABJ':'HORS ABJ');
-                    return (
-                      <div className="pub-entry" key={i}>
-                        <div className={`dot ${res==='ABJ'?'dot-a':'dot-h'}`}/>
-                        <div className="pub-info">
-                          <div className="pub-name">{s.name}</div>
-                          <div className="pub-wa">{flagByCode[s.code||'225']||'🌍'} +{s.code||'225'}{s.wa}</div>
-                          <span className={`pub-res ${res==='ABJ'?'':'h'}`}>{res}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <ShareButtons pub={pub} nbEtudiants={nbEtudiants}/>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        </>
-      )}
-    </div>
+  return React.createElement('div', null,
+    React.createElement('header', null,
+      React.createElement('h1', null, '\u26a1 INSCRIPTION GROUPES'),
+      React.createElement('p', null, React.createElement('span', {className:'sync-dot'}), 'EN DIRECT \u00b7 Timer 2 min \u00b7 WhatsApp requis')
+    ),
+    React.createElement('div', {className:'settings-panel'},
+      React.createElement('div', {className:'sg'},
+        React.createElement('label', null, '\ud83d\udc65 \xc9tudiants / groupe'),
+        React.createElement('div', {className:'cw'},
+          React.createElement('button', {className:'cb', onClick:function(){ setNbE(function(n){ return Math.max(2,n-1); }); }}, '\u2212'),
+          React.createElement('input', {type:'number', value:nbE, readOnly:true}),
+          React.createElement('button', {className:'cb', onClick:function(){ setNbE(function(n){ return Math.min(20,n+1); }); }}, '+')
+        )
+      ),
+      React.createElement('div', {className:'ssep'}),
+      React.createElement('div', {className:'sg'},
+        React.createElement('label', null, '\ud83d\uddc2\ufe0f Nombre de cartes'),
+        React.createElement('div', {className:'cw'},
+          React.createElement('button', {className:'cb', onClick:function(){ setNbC(function(n){ return Math.max(10,n-1); }); }}, '\u2212'),
+          React.createElement('input', {type:'number', value:nbC, readOnly:true}),
+          React.createElement('button', {className:'cb', onClick:function(){ setNbC(function(n){ return Math.min(50,n+1); }); }}, '+')
+        )
+      ),
+      React.createElement('div', {className:'ssep'}),
+      React.createElement('div', {className:'sh'},
+        nbAbj+' place'+(nbAbj>1?'s':'')+' ABJ \u00b7 '+(nbE-nbAbj)+' Hors Abj',
+        React.createElement('br'),
+        'Sync Firebase \ud83d\udd25'
+      )
+    ),
+    React.createElement('div', {className:'grid'},
+      Array.from({length:nbC}, function(_,i){
+        return React.createElement(PoolCard, {key:i+'-'+nbE, idx:i, nbE:nbE, fb:fb});
+      })
+    ),
+    published.length>0 && React.createElement('div', null,
+      React.createElement('div', {className:'search-bar'},
+        React.createElement('div', {className:'search-wrap'},
+          React.createElement('span', {className:'search-icon'}, '\ud83d\udd0d'),
+          React.createElement('input', {
+            className:'search-input', type:'number',
+            placeholder:'N\u00b0 groupe\u2026', value:searchVal, min:'1',
+            onChange:function(e){ handleSearch(e.target.value); }
+          })
+        ),
+        snf && React.createElement('span', {className:'snf'}, 'Groupe '+searchVal+' introuvable')
+      ),
+      React.createElement('div', {className:'published-section'},
+        React.createElement('div', {className:'pub-heading'},
+          '\u2705 Groupes Publi\xe9s',
+          React.createElement('small', null, published.length+' groupe'+(published.length>1?'s':''))
+        ),
+        React.createElement('div', {className:'pub-grid'},
+          published.map(function(pub){
+            var nA = Math.ceil(nbE/2);
+            return React.createElement('div', {className:'pub-card', id:'pub-'+pub.num, key:pub.num},
+              React.createElement('div', {className:'gloss'}),
+              React.createElement('div', {className:'pc-head'}, 'Groupe #'+pub.num+' \u00b7 '+pub.time),
+              pub.slots.map(function(s,i){
+                var res = pub.phase===2?'ABJ':(i<nA?'ABJ':'HORS ABJ');
+                return React.createElement('div', {className:'pe', key:i},
+                  React.createElement('div', {className:'dot '+(res==='ABJ'?'da':'dh')}),
+                  React.createElement('div', {className:'pi'},
+                    React.createElement('div', {className:'pn'}, s.name),
+                    React.createElement('div', {className:'pw'}, (flagByCode[s.code||'225']||'')+' +'+(s.code||'225')+s.wa),
+                    React.createElement('span', {className:'pr '+(res==='ABJ'?'':'h')}, res)
+                  )
+                );
+              }),
+              React.createElement(ShareBtn, {pub:pub, nbE:nbE})
+            );
+          })
+        )
+      )
+    )
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
 </script>
 </body>
 </html>
