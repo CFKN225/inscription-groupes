@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Inscription Pools</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #07090f;
+  --surface: #0e1018;
+  --card: #13161f;
+  --border: #232636;
+  --accent: #f5c842;
+  --accent2: #e85d04;
+  --green: #06d6a0;
+  --red: #ef233c;
+  --blue: #4cc9f0;
+  --text: #e4e6f0;
+  --muted: #555877;
+}
+
+body {
+  font-family: 'Syne', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 28px 16px 80px;
+  background-image:
+    radial-gradient(ellipse 70% 35% at 50% 0%, rgba(245,200,66,0.07) 0%, transparent 55%),
+    repeating-linear-gradient(0deg, transparent, transparent 47px, rgba(255,255,255,0.012) 48px),
+    repeating-linear-gradient(90deg, transparent, transparent 47px, rgba(255,255,255,0.012) 48px);
+}
+
+header { text-align: center; margin-bottom: 36px; }
+.dl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #f5c842, #e85d04);
+  color: #000;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 4px 22px rgba(245,200,66,.25);
+  transition: all .2s;
+}
+.dl-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(245,200,66,.4); }
+header h1 {
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -1px;
+  text-shadow: 0 0 50px rgba(245,200,66,0.25);
+}
+header p {
+  color: var(--muted);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  margin-top: 7px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 18px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* CARD */
+.pool-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px 16px 16px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .3s;
+}
+.pool-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  opacity: 0;
+  transition: opacity .3s;
+}
+.pool-card.phase1-active::before { opacity: 1; }
+.pool-card.phase1-active { border-color: rgba(245,200,66,.25); }
+.pool-card.phase2-active { border-color: rgba(76,201,240,.3); }
+.pool-card.phase2-active::before {
+  background: linear-gradient(90deg, var(--blue), var(--green));
+  opacity: 1;
+}
+
+.pool-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.pool-title { font-size: 1rem; font-weight: 800; letter-spacing: 1.5px; }
+.pool-count {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--muted);
+  background: var(--surface);
+  padding: 3px 8px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+}
+
+/* TIMER */
+.timer-wrap { margin-bottom: 12px; }
+.timer-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+.timer-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.badge {
+  font-size: 0.52rem;
+  padding: 2px 6px;
+  border-radius: 20px;
+  letter-spacing: 1px;
+}
+.b-wait  { color: var(--muted);   background: rgba(85,88,119,.1);   border: 1px solid rgba(85,88,119,.2); }
+.b-pause { color: var(--accent2); background: rgba(232,93,4,.12);   border: 1px solid rgba(232,93,4,.3); }
+.b-p2    { color: var(--blue);    background: rgba(76,201,240,.1);  border: 1px solid rgba(76,201,240,.3); }
+
+.timer-val {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+.timer-val.p { color: var(--accent2); }
+.timer-val.e { color: var(--red); }
+.timer-val.t { color: var(--blue); }
+
+.timer-track { height: 3px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.timer-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width .9s linear, background .4s;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+}
+.timer-fill.p { background: var(--accent2); }
+.timer-fill.e { background: var(--red); }
+.timer-fill.t { background: linear-gradient(90deg, var(--blue), var(--green)); }
+
+/* PHASE NOTICE */
+.phase-notice {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--blue);
+  background: rgba(76,201,240,.06);
+  border: 1px solid rgba(76,201,240,.2);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+.delai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(135deg, #ef233c, #e85d04);
+  border-radius: 8px;
+  padding: 6px 12px;
+  margin-bottom: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  animation: pulse-badge 1.2s ease-in-out infinite alternate;
+}
+@keyframes pulse-badge {
+  from { box-shadow: 0 0 8px rgba(239,35,60,.3); }
+  to   { box-shadow: 0 0 20px rgba(239,35,60,.7), 0 0 40px rgba(232,93,4,.4); }
+}
+
+/* SETTINGS PANEL */
+.settings-panel {
+  max-width: 1400px;
+  margin: 0 auto 28px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.settings-panel label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  white-space: nowrap;
+}
+.settings-panel .set-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.settings-panel input[type=number] {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--accent);
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  font-size: 1.1rem;
+  padding: 6px 4px;
+  width: 48px;
+  outline: none;
+  text-align: center;
+  transition: border-color .2s;
+  -moz-appearance: textfield;
+}
+.settings-panel input[type=number]::-webkit-inner-spin-button,
+.settings-panel input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.settings-panel input[type=number]:focus { border-color: var(--accent); }
+.counter-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cnt-btn {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--accent);
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+  line-height: 1;
+  user-select: none;
+}
+.cnt-btn:hover { background: rgba(245,200,66,.1); border-color: var(--accent); transform: scale(1.08); }
+.cnt-btn:active { transform: scale(.95); }
+.settings-panel input[type=number]:focus { border-color: var(--accent); }
+.settings-panel .set-hint {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.settings-sep {
+  width: 1px;
+  height: 36px;
+  background: var(--border);
+}
+.pays-select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--accent);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  padding: 6px 10px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color .2s;
+}
+.pays-select:focus { border-color: var(--accent); }
+.pays-select option { background: #13161f; }
+
+/* SHARE BUTTONS */
+.share-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  transition: all .2s;
+}
+.share-wa {
+  background: #25d366;
+  color: #fff;
+  width: 100%;
+  justify-content: center;
+  padding: 7px 10px;
+  font-size: 0.68rem;
+}
+.share-wa:hover { background: #1ebe5a; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(37,211,102,.35); }
+.share-wa.sending { background: #128c3e; cursor: wait; opacity: .85; transform: none; }
+.share-wa:disabled { cursor: wait; }
+.wa-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.code-select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--accent);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 7px 4px;
+  width: 62px;
+  outline: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color .2s;
+  -webkit-appearance: none;
+  text-align: center;
+}
+.code-select:focus { border-color: var(--accent); }
+.code-select option { background: #13161f; }
+.code-select.locked { background: #0d0f18 !important; color: #2c2e42 !important; border-color: #181a27 !important; pointer-events: none; }
+.wa-input { flex: 1; min-width: 0; }
+
+.slots { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+
+.slot { display: flex; flex-direction: column; gap: 5px; }
+
+.slot-header { display: flex; align-items: center; gap: 7px; margin-bottom: 1px; }
+.slot-num {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.64rem;
+  color: var(--muted);
+  min-width: 14px;
+}
+.badge-abj {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.53rem;
+  padding: 2px 7px;
+  border-radius: 20px;
+  color: var(--accent);
+  background: rgba(245,200,66,.1);
+  border: 1px solid rgba(245,200,66,.3);
+  font-weight: 700;
+}
+.badge-hors {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.53rem;
+  padding: 2px 7px;
+  border-radius: 20px;
+  color: var(--muted);
+  background: rgba(85,88,119,.1);
+  border: 1px solid rgba(85,88,119,.25);
+}
+
+.slot-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.field-group { display: flex; flex-direction: column; gap: 3px; }
+.field-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.5rem;
+  color: var(--muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding-left: 2px;
+}
+
+input[type=text], input[type=tel] {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  font-size: 0.75rem;
+  padding: 7px 9px;
+  width: 100%;
+  outline: none;
+  transition: border-color .2s, background .2s;
+}
+input[type=text]:focus, input[type=tel]:focus {
+  border-color: var(--accent);
+  background: rgba(245,200,66,.03);
+}
+input.locked {
+  background: #0d0f18 !important;
+  color: #2c2e42 !important;
+  border-color: #181a27 !important;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* CONFIRM */
+.confirm-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+  transition: border-color .2s;
+}
+.confirm-row:hover { border-color: rgba(6,214,160,.3); }
+.confirm-row input[type=checkbox] {
+  width: 14px; height: 14px;
+  accent-color: var(--green);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.confirm-row span { font-size: 0.7rem; color: var(--muted); line-height: 1.3; }
+.confirm-row.done span { color: var(--green); }
+.confirm-row.done { border-color: rgba(6,214,160,.25); }
+
+/* PUBLISH */
+.publish-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.publish-btn:disabled {
+  background: var(--surface);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  cursor: not-allowed;
+}
+.publish-btn:not(:disabled) {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #000;
+  box-shadow: 0 4px 22px rgba(245,200,66,.2);
+}
+.publish-btn:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 7px 28px rgba(245,200,66,.35);
+}
+.publish-btn.blink {
+  animation: blink-pub 0.7s ease-in-out infinite alternate;
+}
+@keyframes blink-pub {
+  from { box-shadow: 0 0 10px rgba(245,200,66,.4); transform: scale(1); }
+  to   { box-shadow: 0 0 35px rgba(245,200,66,.95), 0 0 60px rgba(232,93,4,.5); transform: scale(1.025); }
+}
+
+/* PUBLISHED */
+.published-section { max-width: 1400px; margin: 44px auto 0; }
+.pub-heading {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--green);
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pub-heading small {
+  font-size: 0.7rem;
+  color: var(--muted);
+  font-weight: 400;
+  font-family: 'Space Mono', monospace;
+}
+.pub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 14px;
+}
+.pub-card {
+  background: rgba(6,214,160,.04);
+  border: 1px solid rgba(6,214,160,.2);
+  border-radius: 12px;
+  padding: 14px;
+  animation: pop .35s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Contour scintillant qui parcourt la carte */
+.pub-card::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 14px;
+  background: conic-gradient(
+    from var(--angle, 0deg),
+    transparent 0deg,
+    transparent 60deg,
+    #00ff88 90deg,
+    #afffdf 110deg,
+    #ffffff 120deg,
+    #afffdf 130deg,
+    #00ff88 150deg,
+    transparent 180deg,
+    transparent 360deg
+  );
+  animation: spin-border 2.5s linear infinite;
+  z-index: 0;
+}
+
+/* Fond intérieur pour masquer le conic-gradient sauf le bord */
+.pub-card::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 12px;
+  background: #0d1a14;
+  z-index: 1;
+}
+
+/* Contenu au-dessus */
+.pub-card > * { position: relative; z-index: 2; }
+
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes spin-border {
+  from { --angle: 0deg; }
+  to   { --angle: 360deg; }
+}
+
+/* Effet gloss par-dessus */
+.pub-card .gloss {
+  position: absolute;
+  inset: 2px;
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,0.07) 0%,
+    rgba(255,255,255,0.0) 50%,
+    rgba(0,255,136,0.04) 100%
+  );
+  pointer-events: none;
+  z-index: 3;
+}
+@keyframes pop {
+  from { opacity:0; transform:translateY(10px) scale(.97); }
+  to   { opacity:1; transform:none; }
+}
+.pub-card h4 {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--green);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.pub-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+}
+.pub-entry:last-child { border: none; }
+.dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.dot-a { background: var(--accent); }
+.dot-h { background: var(--muted); }
+.pub-info { flex: 1; min-width: 0; }
+.pub-name { font-size: 0.58rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0; }
+.pub-wa   { font-family: 'Space Mono', monospace; font-size: 0.6rem; color: var(--muted); margin-top: 1px; }
+.pub-res  {
+  display: inline-block;
+  margin-top: 3px;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.56rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: var(--accent);
+  background: rgba(245,200,66,.08);
+}
+.pub-res.h { color: var(--muted); background: rgba(85,88,119,.1); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+const TIMER_TOTAL  = 2 * 60;  // secondes
+const IDLE_PAUSE   = 15;       // secondes avant reprise
+
+const fmt = s =>
+  `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+
+const emptySlot  = () => ({ name:'', wa:'', code:'225', confirmed:false });
+const emptySlots = (n) => Array.from({length:n}, emptySlot);
+
+function PoolCard({ idx, onPublish, getNextGroupeNum, nbEtudiants }) {
+  const [slots,    setSlots]    = useState(() => emptySlots(nbEtudiants));
+  const [phase,    setPhase]    = useState(1);
+  const [timeLeft, setTimeLeft] = useState(TIMER_TOTAL);
+  const [running,  setRunning]  = useState(false);
+  const [paused,   setPaused]   = useState(false);
+  const [expired,  setExpired]  = useState(false);
+  const [activeEditors, setActiveEditors] = useState(0);
+
+  const timerRef      = useRef(null);
+  const idleRef       = useRef(null);
+  const runningRef    = useRef(false);
+  const pausedRef     = useRef(false);
+  const activeEditRef = useRef(0);
+
+  // Sync slots quand nbEtudiants change (reset)
+  useEffect(() => {
+    setSlots(emptySlots(nbEtudiants));
+    setPhase(1); setTimeLeft(TIMER_TOTAL);
+    setRunning(false); setPaused(false); setExpired(false); setActiveEditors(0);
+    clearInterval(timerRef.current); clearTimeout(idleRef.current);
+  }, [nbEtudiants]);
+
+  useEffect(() => { runningRef.current  = running;      }, [running]);
+  useEffect(() => { pausedRef.current   = paused;       }, [paused]);
+  useEffect(() => { activeEditRef.current = activeEditors; }, [activeEditors]);
+
+  // nbAbj = moitié haute, reste = HORS ABJ (phase 1)
+  const nbAbj = Math.ceil(nbEtudiants / 2);
+  const resOf = (i) => {
+    if (phase === 2) return 'ABJ';
+    return i < nbAbj ? 'ABJ' : 'HORS ABJ';
+  };
+
+  const startTimer = useCallback(() => {
+    clearInterval(timerRef.current);
+    clearTimeout(idleRef.current);
+    setTimeLeft(TIMER_TOTAL);
+    setExpired(false);
+    setPaused(false);
+    setRunning(true);
+  }, []);
+
+  useEffect(() => {
+    if (!running || paused || expired) return;
+    timerRef.current = setInterval(() => {
+      setTimeLeft(t => {
+        if (t <= 1) { clearInterval(timerRef.current); setExpired(true); setRunning(false); return 0; }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timerRef.current);
+  }, [running, paused, expired]);
+
+  useEffect(() => {
+    if (expired && phase === 1) { setPhase(2); setTimeout(startTimer, 400); }
+  }, [expired, phase]);
+
+  const pauseTimer = useCallback(() => {
+    if (!runningRef.current) return;
+    clearInterval(timerRef.current);
+    setPaused(true);
+  }, []);
+
+  const resumeTimer = useCallback(() => {
+    if (!runningRef.current) return;
+    if (activeEditRef.current > 0) return;
+    clearTimeout(idleRef.current);
+    idleRef.current = setTimeout(() => setPaused(false), IDLE_PAUSE * 1000);
+  }, []);
+
+  const onFocusField = useCallback(() => {
+    setActiveEditors(n => { const nx = n+1; activeEditRef.current=nx; pauseTimer(); return nx; });
+  }, [pauseTimer]);
+
+  const onBlurField = useCallback(() => {
+    setActiveEditors(n => { const nx=Math.max(0,n-1); activeEditRef.current=nx; if(nx===0) resumeTimer(); return nx; });
+  }, [resumeTimer]);
+
+  const toggleConfirm = (i) => {
+    setSlots(prev => {
+      const next = prev.map((s,j) => j===i ? {...s, confirmed:!s.confirmed} : s);
+      // démarrer timer quand les nbAbj premières places sont remplies+confirmées
+      if (phase===1 && !runningRef.current && !expired) {
+        const ok = next.slice(0, nbAbj).every(s => s.name.trim() && s.wa.trim() && s.confirmed);
+        if (ok) setTimeout(startTimer, 50);
+      }
+      if (runningRef.current && pausedRef.current && activeEditRef.current===0) {
+        clearTimeout(idleRef.current);
+        setTimeout(() => setPaused(false), 100);
+      }
+      return next;
+    });
+  };
+
+  const updateField = (i, field, val) => {
+    setSlots(prev => prev.map((s,j) => j===i ? {...s,[field]:val} : s));
+  };
+
+  const tState       = expired?'e':paused?'p':phase===2?'t':'';
+  const pct          = (timeLeft/TIMER_TOTAL)*100;
+  const slot23Locked = phase===1 && !running && !expired;
+  const canPublish   = slots.every(s => s.name.trim() && s.wa.trim() && s.confirmed);
+  const simultane    = activeEditors >= 2;
+
+  const handlePublish = () => {
+    const num = getNextGroupeNum();
+    onPublish(idx, slots, phase, num);
+    setSlots(emptySlots(nbEtudiants));
+    setPhase(1); setTimeLeft(TIMER_TOTAL);
+    setRunning(false); setPaused(false); setExpired(false); setActiveEditors(0);
+    clearInterval(timerRef.current); clearTimeout(idleRef.current);
+  };
+
+  return (
+    <div className={`pool-card ${running&&phase===1?'phase1-active':''} ${phase===2?'phase2-active':''}`}>
+      <div className="pool-header">
+        <span className="pool-title">GROUPE #</span>
+        <span className="pool-count">{slots.filter(s=>s.name.trim()).length}/{nbEtudiants}</span>
+      </div>
+
+      <div className="timer-wrap">
+        <div className="timer-top">
+          <span className="timer-label">
+            Timer
+            {!running&&!expired&&phase===1 && <span className="badge b-wait">EN ATTENTE</span>}
+            {running&&paused&&!simultane   && <span className="badge b-pause">⏸ PAUSE {IDLE_PAUSE}s</span>}
+            {running&&simultane            && <span className="badge b-pause">⏸ SAISIE SIMULTANÉE</span>}
+            {phase===2                     && <span className="badge b-p2">PHASE 2 · ABJ</span>}
+          </span>
+          <span className={`timer-val ${tState}`}>
+            {!running&&!expired&&phase===1 ? '--:--' : fmt(timeLeft)}
+          </span>
+        </div>
+        <div className="timer-track">
+          <div className={`timer-fill ${tState}`} style={{width:`${(running||expired)?pct:0}%`}}/>
+        </div>
+      </div>
+
+      {phase===2 && (
+        <>
+          <div className="delai-badge">🔓 DÉLAI DÉPASSÉ — OUVERT À TOUS</div>
+          <div className="phase-notice">
+            Places {nbAbj+1} à {nbEtudiants} désormais accessibles à <strong>ABJ</strong>.<br/>
+            Nouveau timer de 2 min en cours.
+          </div>
+        </>
+      )}
+
+      <div className="slots">
+        {slots.map((slot, i) => {
+          const res    = resOf(i);
+          const isAbj  = res === 'ABJ';
+          const locked = i >= nbAbj && slot23Locked;
+          return (
+            <div className="slot" key={i}>
+              <div className="slot-header">
+                <span className="slot-num">{i+1}</span>
+                <span className={isAbj?'badge-abj':'badge-hors'}>{isAbj?'🟡 ABJ':'⚫ HORS ABJ'}</span>
+                {locked && <span style={{fontFamily:'Space Mono',fontSize:'0.5rem',color:'var(--muted)'}}>🔒 en attente</span>}
+              </div>
+              <div className="slot-fields">
+                <div className="field-group">
+                  <span className="field-label">Nom complet</span>
+                  <input type="text" placeholder="Prénom Nom" value={slot.name}
+                    className={locked?'locked':''} disabled={locked}
+                    onFocus={onFocusField} onBlur={onBlurField}
+                    onChange={e=>updateField(i,'name',e.target.value)}/>
+                </div>
+                <div className="field-group">
+                  <span className="field-label">WhatsApp</span>
+                  <div className={`wa-row ${locked?'locked-wrap':''}`}>
+                    <select
+                      className={`code-select ${locked?'locked':''}`}
+                      value={slot.code}
+                      disabled={locked}
+                      onChange={e=>updateField(i,'code',e.target.value)}>
+                      {PAYS.map(p=>(
+                        <option key={p.code} value={p.code}>+{p.code}</option>
+                      ))}
+                    </select>
+                    <input type="tel" placeholder="07 00 00 00" value={slot.wa}
+                      className={`wa-input ${locked?'locked':''}`} disabled={locked}
+                      onFocus={onFocusField} onBlur={onBlurField}
+                      onChange={e=>updateField(i,'wa',e.target.value)}/>
+                  </div>
+                </div>
+              </div>
+              <div className={`confirm-row ${slot.confirmed?'done':''}`}
+                onClick={()=>!locked&&toggleConfirm(i)}
+                style={locked?{opacity:.35,pointerEvents:'none'}:{}}>
+                <input type="checkbox" checked={slot.confirmed} onChange={()=>{}}
+                  onClick={e=>{e.stopPropagation();if(!locked)toggleConfirm(i);}}/>
+                <span>{slot.confirmed?`✅ Confirmé — ${isAbj?'Abidjan':'Hors Abidjan'}`:'Cochez pour confirmer votre saisie'}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <button className={`publish-btn ${canPublish?'blink':''}`} disabled={!canPublish} onClick={handlePublish}>
+        📋 Publier la liste
+      </button>
+    </div>
+  );
+}
+
+function toBoldItalic(str) {
+  // Convertit chiffres et + en caractères Unicode mathématiques gras italiques
+  const map = {
+    '0':'𝟎','1':'𝟏','2':'𝟐','3':'𝟑','4':'𝟒',
+    '5':'𝟓','6':'𝟔','7':'𝟕','8':'𝟖','9':'𝟗',
+    '+':'＋'
+  };
+  return str.split('').map(c => map[c] || c).join('');
+}
+
+function buildShareText(pub, nbEtudiants) {
+  const nbAbj = Math.ceil(nbEtudiants / 2);
+  const lines = pub.slots.map((s, i) => {
+    const res  = pub.phase===2 ? 'ABJ' : (i < nbAbj ? 'ABJ' : 'HORS ABJ');
+    const code = s.code || '225';
+    const flag = flagByCode[code] || '🌍';
+    const raw  = '+' + code + s.wa.trim().replace(/\s+/g, '');
+    const num  = toBoldItalic(raw);
+    return `${i+1}. ${s.name} (${res})\n📱 ${flag} ${num}`;
+  });
+  return `📋 *Groupe #${pub.num}* — ${pub.time}\n${lines.join('\n')}`;
+}
+
+function ShareButtons({ pub, nbEtudiants }) {
+  const text = buildShareText(pub, nbEtudiants);
+  const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+
+  return (
+    <div className="share-row">
+      <a
+        className="share-btn share-wa"
+        href={waUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        📲 Partager
+      </a>
+    </div>
+  );
+}
+
+const PAYS = [
+  { label: '🇨🇮 Côte d\'Ivoire', code: '225', flag: '🇨🇮' },
+  { label: '🇸🇳 Sénégal',        code: '221', flag: '🇸🇳' },
+  { label: '🇧🇯 Bénin',          code: '229', flag: '🇧🇯' },
+  { label: '🇹🇬 Togo',           code: '228', flag: '🇹🇬' },
+  { label: '🇧🇫 Burkina Faso',   code: '226', flag: '🇧🇫' },
+  { label: '🇲🇱 Mali',           code: '223', flag: '🇲🇱' },
+  { label: '🇳🇪 Niger',          code: '227', flag: '🇳🇪' },
+  { label: '🇬🇳 Guinée',         code: '224', flag: '🇬🇳' },
+  { label: '🇨🇲 Cameroun',       code: '237', flag: '🇨🇲' },
+  { label: '🇫🇷 France',         code: '33',  flag: '🇫🇷' },
+  { label: '🇧🇪 Belgique',       code: '32',  flag: '🇧🇪' },
+  { label: '🇨🇦 Canada',         code: '1',   flag: '🇨🇦' },
+];
+const flagByCode = Object.fromEntries(PAYS.map(p => [p.code, p.flag]));
+
+function App() {
+  const [published,   setPublished]   = useState([]);
+  const [nbEtudiants, setNbEtudiants] = useState(4);
+  const [nbCartes,    setNbCartes]    = useState(10);
+  const groupeCounter = useRef(0);
+
+  const getNextGroupeNum = useCallback(() => { groupeCounter.current+=1; return groupeCounter.current; }, []);
+
+  const handlePublish = (idx, slots, phase, num) => {
+    setPublished(prev => [...prev, { id:Date.now(), num, slots, phase, time:new Date().toLocaleTimeString('fr-FR') }]);
+    setTimeout(() => {
+      const el = document.getElementById(`pub-${num}`);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  };
+
+  const nbAbj = Math.ceil(nbEtudiants / 2);
+
+  return (
+    <div>
+      <header>
+        <h1>⚡ INSCRIPTION GROUPES</h1>
+        <p>Timer 2 min · WhatsApp requis</p>
+      </header>
+
+      {/* Panneau paramètres */}
+      <div className="settings-panel">
+        <div className="set-group">
+          <label>👥 Étudiants / groupe</label>
+          <div className="counter-wrap">
+            <button className="cnt-btn" onClick={() => setNbEtudiants(n => Math.max(2, n-1))}>−</button>
+            <input type="number" min="2" max="20" value={nbEtudiants} readOnly/>
+            <button className="cnt-btn" onClick={() => setNbEtudiants(n => Math.min(20, n+1))}>+</button>
+          </div>
+        </div>
+        <div className="settings-sep"/>
+        <div className="set-group">
+          <label>🗂️ Nombre de cartes</label>
+          <div className="counter-wrap">
+            <button className="cnt-btn" onClick={() => setNbCartes(n => Math.max(10, n-1))}>−</button>
+            <input type="number" min="10" max="50" value={nbCartes} readOnly/>
+            <button className="cnt-btn" onClick={() => setNbCartes(n => Math.min(50, n+1))}>+</button>
+          </div>
+        </div>
+        <div className="settings-sep"/>
+        <div className="set-hint">
+          Min 10 cartes · {nbAbj} place{nbAbj>1?'s':''} ABJ · {nbEtudiants-nbAbj} Hors Abj<br/>
+          Timer déclenché quand les {nbAbj} places ABJ sont confirmées
+        </div>
+      </div>
+
+      <div className="grid">
+        {Array.from({length:nbCartes}, (_,i) => (
+          <PoolCard key={`${i}-${nbEtudiants}`} idx={i} onPublish={handlePublish}
+            getNextGroupeNum={getNextGroupeNum} nbEtudiants={nbEtudiants}/>
+        ))}
+      </div>
+
+      {published.length > 0 && (
+        <div className="published-section">
+          <div className="pub-heading">
+            ✅ Groupes Publiés
+            <small>{published.length} groupe{published.length>1?'s':''}</small>
+          </div>
+          <div className="pub-grid">
+            {published.map(pub => {
+              const nAbj = Math.ceil(nbEtudiants/2);
+              return (
+                <div className="pub-card" id={`pub-${pub.num}`} key={pub.id}>
+                  <div className="gloss"/>
+                  <h4>Groupe #{pub.num} · {pub.time}</h4>
+                  {pub.slots.map((s,i) => {
+                    const res = pub.phase===2?'ABJ':(i<nAbj?'ABJ':'HORS ABJ');
+                    return (
+                      <div className="pub-entry" key={i}>
+                        <div className={`dot ${res==='ABJ'?'dot-a':'dot-h'}`}/>
+                        <div className="pub-info">
+                          <div className="pub-name">{s.name}</div>
+                          <div className="pub-wa">{s.wa}</div>
+                          <span className={`pub-res ${res==='ABJ'?'':'h'}`}>{res}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <ShareButtons pub={pub} nbEtudiants={nbEtudiants}/>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+<script>
+function telecharger() {
+  const html = document.documentElement.outerHTML;
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'inscription-pools.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
