@@ -125,6 +125,11 @@ input.locked{background:#0d0f18!important;color:#2c2e42!important;border-color:#
 .loading-screen p{font-family:'Space Mono',monospace;color:var(--muted);font-size:.75rem;letter-spacing:2px;}
 .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
+/* WAITING STATUS */
+.waiting-badge{width:100%;margin-bottom:10px;padding:8px 12px;border-radius:10px;background:rgba(239,35,60,.08);border:1px solid rgba(239,35,60,.25);display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.waiting-text{font-family:'Space Mono',monospace;font-size:.58rem;color:#ef233c;letter-spacing:.5px;line-height:1.4;}
+.waiting-btn{flex-shrink:0;padding:5px 10px;border:none;border-radius:7px;background:#ef233c;color:#fff;font-family:'Syne',sans-serif;font-weight:800;font-size:.6rem;cursor:pointer;letter-spacing:1px;animation:pulse-red .8s ease-in-out infinite alternate;}
+@keyframes pulse-red{from{box-shadow:0 0 6px rgba(239,35,60,.5);}to{box-shadow:0 0 18px rgba(239,35,60,.95),0 0 30px rgba(239,35,60,.4);}}
 </style>
 </head>
 <body>
@@ -191,17 +196,24 @@ function toBoldItalic(str) {
   return str.split('').map(c=>map[c]||c).join('');
 }
 
+const FLAG_NAMES = {
+  '225':'[CI]','221':'[SN]','229':'[BJ]','228':'[TG]','226':'[BF]',
+  '223':'[ML]','227':'[NE]','224':'[GN]','237':'[CM]','33':'[FR]',
+  '32':'[BE]','1':'[CA]'
+};
+
 function buildShareText(pub, nbEtudiants) {
   const nbAbj = Math.ceil(nbEtudiants/2);
   const lines = pub.slots.map((s,i)=>{
     const res  = pub.phase===2?'ABJ':(i<nbAbj?'ABJ':'HORS ABJ');
     const code = s.code||'225';
     const flag = flagByCode[code]||'🌍';
-    const raw  = '+'+code+s.wa.trim().replace(/\s+/g,'');
-    const num  = toBoldItalic(raw);
-    return `${i+1}. ${s.name} (${res})\n📱 ${flag} ${num}`;
+    const fname= FLAG_NAMES[code]||'';
+    const num  = '+'+code+s.wa.trim().replace(/\s+/g,'');
+    // On met le flag emoji + nom pays entre crochets pour garantir affichage
+    return `${i+1}. *${s.name}* (${res})\n   ${flag}${fname} Tel: ${num}`;
   });
-  return `📋 *Groupe #${pub.num}* — ${pub.time}\n${lines.join('\n')}`;
+  return `📋 *Groupe #${pub.num}* — ${pub.time}\n\n${lines.join('\n\n')}`;
 }
 
 function ShareButtons({ pub, nbEtudiants }) {
@@ -231,13 +243,15 @@ function PoolCard({ idx, nbEtudiants, fb, groupeCounter }) {
   const [expired,       setExpired]       = useState(false);
   const [activeEditors, setActiveEditors] = useState(0);
   const [fbReady,       setFbReady]       = useState(false);
+  const [showWaiting,   setShowWaiting]   = useState(false);
 
   const timerRef      = useRef(null);
   const idleRef       = useRef(null);
   const runningRef    = useRef(false);
   const pausedRef     = useRef(false);
   const activeEditRef = useRef(0);
-  const writingRef    = useRef(false); // évite les boucles FB→state→FB
+  const writingRef    = useRef(false);
+  const waitingRef    = useRef(null); // timer 10s inactivité
 
   useEffect(()=>{ runningRef.current=running; },[running]);
   useEffect(()=>{ pausedRef.current=paused;   },[paused]);
@@ -316,7 +330,17 @@ function PoolCard({ idx, nbEtudiants, fb, groupeCounter }) {
 
   const onBlurField = useCallback(()=>{
     setActiveEditors(n=>{ const nx=Math.max(0,n-1); activeEditRef.current=nx; if(nx===0) resumeTimer(); return nx; });
+    // Lancer le timer d'inactivité 10s → afficher badge attente
+    clearTimeout(waitingRef.current);
+    waitingRef.current = setTimeout(()=>setShowWaiting(true), 10000);
   },[resumeTimer]);
+
+  const onFocusFieldWrap = useCallback((e)=>{
+    onFocusField(e);
+    // Annuler le badge d'attente dès qu'on tape
+    clearTimeout(waitingRef.current);
+    setShowWaiting(false);
+  },[onFocusField]);
 
   const toggleConfirm = i => {
     setSlots(prev=>{
@@ -347,6 +371,8 @@ function PoolCard({ idx, nbEtudiants, fb, groupeCounter }) {
   const slot23Locked = phase===1&&!running&&!expired;
   const canPublish   = slots.every(s=>s.name.trim()&&s.wa.trim()&&s.confirmed);
   const simultane    = activeEditors>=2;
+  const filledCount  = slots.filter(s=>s.name.trim()).length;
+  const missingCount = nbEtudiants - filledCount;
 
   const handlePublish = ()=>{
     if (!fb) return;
@@ -427,6 +453,19 @@ function PoolCard({ idx, nbEtudiants, fb, groupeCounter }) {
         </>
       )}
 
+      {/* Badge attente 10s */}
+      {showWaiting && missingCount > 0 && (
+        <div className="waiting-badge">
+          <span className="waiting-text">
+            🕐 Groupe en attente de<br/>
+            <strong>{missingCount} membre{missingCount>1?'s':''}</strong>
+          </span>
+          <button className="waiting-btn" onClick={()=>setShowWaiting(false)}>
+            REJOINDRE
+          </button>
+        </div>
+      )}
+
       <div className="slots">
         {slots.map((slot,i)=>{
           const res    = resOf(i);
@@ -444,7 +483,7 @@ function PoolCard({ idx, nbEtudiants, fb, groupeCounter }) {
                   <span className="field-label">Nom complet</span>
                   <input type="text" placeholder="Prénom Nom" value={slot.name}
                     className={locked?'locked':''} disabled={locked}
-                    onFocus={onFocusField} onBlur={onBlurField}
+                    onFocus={onFocusFieldWrap} onBlur={onBlurField}
                     onChange={e=>updateField(i,'name',e.target.value)}/>
                 </div>
                 <div className="field-group">
@@ -456,16 +495,16 @@ function PoolCard({ idx, nbEtudiants, fb, groupeCounter }) {
                     </select>
                     <input type="tel" placeholder="07 00 00 00" value={slot.wa}
                       className={`wa-input${locked?' locked':''}`} disabled={locked}
-                      onFocus={onFocusField} onBlur={onBlurField}
+                      onFocus={onFocusFieldWrap} onBlur={onBlurField}
                       onChange={e=>updateField(i,'wa',e.target.value)}/>
                   </div>
                 </div>
               </div>
               <div className={`confirm-row ${slot.confirmed?'done':''}`}
-                onClick={()=>!locked&&toggleConfirm(i)}
+                onClick={()=>{ if(!locked){ setShowWaiting(false); clearTimeout(waitingRef.current); toggleConfirm(i); }}}
                 style={locked?{opacity:.35,pointerEvents:'none'}:{}}>
                 <input type="checkbox" checked={slot.confirmed} onChange={()=>{}}
-                  onClick={e=>{e.stopPropagation();if(!locked)toggleConfirm(i);}}/>
+                  onClick={e=>{e.stopPropagation();if(!locked){setShowWaiting(false);clearTimeout(waitingRef.current);toggleConfirm(i);}}}/>
                 <span>{slot.confirmed?`✅ Confirmé — ${isAbj?'Abidjan':'Hors Abidjan'}`:'Cochez pour confirmer votre saisie'}</span>
               </div>
             </div>
